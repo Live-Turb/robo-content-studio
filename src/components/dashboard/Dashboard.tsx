@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,7 +5,7 @@ import { Character, Video, VideoBlock } from '@/types/database';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Video as VideoIcon, TrendingUp, Sparkles, User, LogOut, BarChart3, Template, Eye } from 'lucide-react';
+import { Plus, Video as VideoIcon, TrendingUp, Sparkles, User, LogOut, BarChart3, FileText, Eye } from 'lucide-react';
 import { CharacterCard } from './CharacterCard';
 import { CreateCharacterDialog } from './CreateCharacterDialog';
 import { VideoGenerator } from './VideoGenerator';
@@ -277,7 +276,7 @@ export default function Dashboard() {
               Analytics
             </TabsTrigger>
             <TabsTrigger value="templates" className="flex items-center gap-2">
-              <Template className="h-4 w-4" />
+              <FileText className="h-4 w-4" />
               Templates
             </TabsTrigger>
           </TabsList>

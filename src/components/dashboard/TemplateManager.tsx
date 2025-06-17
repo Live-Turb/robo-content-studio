@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Template, Star, Trash2, Edit, Copy } from 'lucide-react';
+import { Plus, FileText, Star, Trash2, Edit, Copy } from 'lucide-react';
 
 interface PromptTemplate {
   id: string;
@@ -56,7 +56,14 @@ export function TemplateManager({ onTemplateSelect }: TemplateManagerProps) {
       .order('success_rate', { ascending: false });
 
     if (!error && data) {
-      setTemplates(data);
+      // Safely convert Supabase data to our PromptTemplate type
+      const typedTemplates = data.map(template => ({
+        ...template,
+        variables: template.variables && typeof template.variables === 'object' && !Array.isArray(template.variables)
+          ? template.variables as Record<string, any>
+          : {}
+      }));
+      setTemplates(typedTemplates);
     }
     setLoading(false);
   };
@@ -105,7 +112,14 @@ export function TemplateManager({ onTemplateSelect }: TemplateManagerProps) {
 
         if (error) throw error;
 
-        setTemplates([data, ...templates]);
+        const newTemplate = {
+          ...data,
+          variables: data.variables && typeof data.variables === 'object' && !Array.isArray(data.variables)
+            ? data.variables as Record<string, any>
+            : {}
+        };
+
+        setTemplates([newTemplate, ...templates]);
 
         toast({
           title: "Template criado!",
@@ -181,7 +195,14 @@ export function TemplateManager({ onTemplateSelect }: TemplateManagerProps) {
       return;
     }
 
-    setTemplates([data, ...templates]);
+    const newTemplate = {
+      ...data,
+      variables: data.variables && typeof data.variables === 'object' && !Array.isArray(data.variables)
+        ? data.variables as Record<string, any>
+        : {}
+    };
+
+    setTemplates([newTemplate, ...templates]);
     toast({
       title: "Template duplicado!",
       description: "Nova cópia criada com sucesso.",
@@ -222,7 +243,7 @@ export function TemplateManager({ onTemplateSelect }: TemplateManagerProps) {
       {templates.length === 0 ? (
         <Card className="p-12 text-center">
           <div className="flex flex-col items-center gap-4">
-            <Template className="h-16 w-16 text-gray-400" />
+            <FileText className="h-16 w-16 text-gray-400" />
             <h3 className="text-xl font-semibold text-gray-600">Nenhum template ainda</h3>
             <p className="text-gray-500 max-w-md">
               Crie templates personalizados para acelerar a geração de roteiros.
