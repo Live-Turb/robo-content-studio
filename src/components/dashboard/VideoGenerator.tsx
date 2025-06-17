@@ -1,0 +1,587 @@
+
+import { useState } from 'react';
+import { Character, Video, VideoBlock } from '@/types/database';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { Sparkles, Video as VideoIcon, Clock, Globe, Zap, Copy, CheckCircle } from 'lucide-react';
+
+interface VideoGeneratorProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  character: Character | null;
+  onVideoGenerated: () => void;
+}
+
+const DURATION_OPTIONS = [
+  { value: 8, label: '8s - Ultra Rápido' },
+  { value: 16, label: '16s - Rápido' },
+  { value: 24, label: '24s - Padrão' },
+  { value: 32, label: '32s - Médio' },
+  { value: 40, label: '40s - Longo' },
+  { value: 60, label: '1min - Máximo' },
+];
+
+const CONTENT_TYPES = [
+  { 
+    value: 'trending', 
+    label: 'Trending Now', 
+    description: 'IA busca tendências atuais',
+    icon: '⚡',
+    recommended: true
+  },
+  { 
+    value: 'comedy', 
+    label: 'Comédia', 
+    description: 'Conteúdo engraçado e viral',
+    icon: '😂'
+  },
+  { 
+    value: 'horror', 
+    label: 'Terror/Suspense', 
+    description: 'Histórias assustadoras',
+    icon: '😱'
+  },
+  { 
+    value: 'custom', 
+    label: 'Tema Personalizado', 
+    description: 'Defina seu próprio tema',
+    icon: '🎯'
+  },
+];
+
+export function VideoGenerator({ open, onOpenChange, character, onVideoGenerated }: VideoGeneratorProps) {
+  const [duration, setDuration] = useState<number>(24);
+  const [contentType, setContentType] = useState<string>('trending');
+  const [customTopic, setCustomTopic] = useState('');
+  const [country, setCountry] = useState('BR');
+  const [loading, setLoading] = useState(false);
+  const [generatedVideo, setGeneratedVideo] = useState<Video | null>(null);
+  const [copiedBlock, setCopiedBlock] = useState<number | null>(null);
+  const { toast } = useToast();
+
+  const generateVideo = async () => {
+    if (!character) return;
+
+    setLoading(true);
+
+    try {
+      // Simulate AI video generation
+      const blockCount = Math.ceil(duration / 8);
+      const blocks: VideoBlock[] = [];
+
+      for (let i = 1; i <= blockCount; i++) {
+        const blockDuration = i === blockCount ? duration - (i - 1) * 8 : 8;
+        
+        blocks.push({
+          number: i,
+          duration: `${(i - 1) * 8}-${(i - 1) * 8 + blockDuration}s`,
+          scene: `Cena ${i}: ${character.name} em ação dinâmica que prende a atenção do viewer desde o primeiro segundo`,
+          character: character.visual_prompt,
+          camera: `${i === 1 ? 'Medium shot' : i === blockCount ? 'Close-up' : 'Wide shot'}, 35mm lens, ${i % 2 === 0 ? 'handheld style' : 'smooth tracking'}`,
+          setting: `Ambiente moderno e vibrante que complementa a personalidade do personagem`,
+          lighting: `${i % 2 === 0 ? 'Neon backlighting' : 'Soft key lighting'}, cinematográfico, cores vibrantes`,
+          audio: `"${character.name}: Frase impactante que gera engajamento e conecta com a audiência!"`,
+          transition: i < blockCount ? `${i % 2 === 0 ? 'Quick cut' : 'Smooth transition'}` : 'Freeze on impactful pose'
+        });
+      }
+
+      // Generate hashtags
+      const hashtags = {
+        tiktok: ['#ViralVideo', '#AIContent', '#Trending', '#ForYou', '#Brasil', '#Viral', '#FYP'],
+        instagram: ['#Reels', '#Viral', '#AIGenerated', '#ContentCreator', '#Brasil', '#Trending', '#InstagramReels', '#ViralReels', '#AI', '#TechContent', '#Innovation', '#DigitalArt', '#CreativeContent', '#SocialMedia', '#Engagement'],
+        youtube: ['#Shorts', '#ViralContent', '#AIVideo', '#Brasil', '#Trending']
+      };
+
+      // Create video title
+      const title = contentType === 'trending' 
+        ? `${character.name} e a Tendência Viral do Momento`
+        : contentType === 'comedy'
+        ? `${character.name}: Comédia que Vai Te Fazer Rir`
+        : contentType === 'horror'
+        ? `${character.name}: História de Arrepiar`
+        : `${character.name}: ${customTopic}`;
+
+      // Save to database
+      const { data: video, error } = await supabase
+        .from('videos')
+        .insert([{
+          character_id: character.id,
+          title,
+          duration_seconds: duration,
+          blocks,
+          hashtags,
+          country_code: country,
+          content_type: contentType as any,
+          trending_topic: contentType === 'custom' ? customTopic : null,
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setGeneratedVideo(video);
+      onVideoGenerated();
+
+      toast({
+        title: "Roteiro viral gerado!",
+        description: `Seu vídeo de ${duration}s está pronto para viralizar.`,
+      });
+
+    } catch (error) {
+      console.error('Erro ao gerar vídeo:', error);
+      toast({
+        variant: "destructive",
+        title: "Erro ao gerar vídeo",
+        description: "Tente novamente em alguns momentos.",
+      });
+    }
+
+    setLoading(false);
+  };
+
+  const copyToClipboard = async (text: string, blockNumber?: number) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      if (blockNumber) {
+        setCopiedBlock(blockNumber);
+        setTimeout(() => setCopiedBlock(null), 2000);
+      }
+      toast({
+        title: "Copiado!",
+        description: "Prompt copiado para a área de transferência.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao copiar",
+        description: "Não foi possível copiar o texto.",
+      });
+    }
+  };
+
+  const formatFullScript = (video: Video) => {
+    const script = [
+      `=== ROTEIRO VIRAL: "${video.title}" ===`,
+      `Duração Total: ${video.duration_seconds} segundos (${video.blocks.length} blocos)`,
+      '',
+    ];
+
+    video.blocks.forEach((block) => {
+      script.push(`BLOCO ${block.number} (${block.duration})`);
+      script.push(`Scene: ${block.scene}`);
+      script.push(`Character: ${block.character}`);
+      script.push(`Camera: ${block.camera}`);
+      script.push(`Setting: ${block.setting}`);
+      script.push(`Lighting: ${block.lighting}`);
+      script.push(`Audio: ${block.audio}`);
+      if (block.transition) script.push(`Transition: ${block.transition}`);
+      script.push('');
+    });
+
+    script.push('=== HASHTAGS OTIMIZADAS ===');
+    script.push('');
+    script.push(`TikTok: ${video.hashtags.tiktok.join(' ')}`);
+    script.push(`Instagram: ${video.hashtags.instagram.join(' ')}`);
+    script.push(`YouTube: ${video.hashtags.youtube.join(' ')}`);
+
+    return script.join('\n');
+  };
+
+  const resetForm = () => {
+    setDuration(24);
+    setContentType('trending');
+    setCustomTopic('');
+    setGeneratedVideo(null);
+  };
+
+  const handleClose = () => {
+    resetForm();
+    onOpenChange(false);
+  };
+
+  if (!character) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-2xl">
+            <Sparkles className="h-6 w-6 text-purple-600" />
+            Gerar Vídeo Viral - {character.name}
+          </DialogTitle>
+          <DialogDescription>
+            Configure os parâmetros para gerar um roteiro otimizado para viralização
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-6">
+          {!generatedVideo ? (
+            // Generation Form
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Left Panel - Configuration */}
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-5 w-5 text-blue-600" />
+                      <CardTitle className="text-lg">Duração do Vídeo</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-2">
+                      {DURATION_OPTIONS.map((option) => (
+                        <Button
+                          key={option.value}
+                          variant={duration === option.value ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setDuration(option.value)}
+                          className={duration === option.value ? "bg-purple-600" : ""}
+                        >
+                          {option.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center gap-2">
+                      <VideoIcon className="h-5 w-5 text-green-600" />
+                      <CardTitle className="text-lg">Tipo de Conteúdo</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {CONTENT_TYPES.map((type) => (
+                      <Card
+                        key={type.value}
+                        className={`cursor-pointer transition-all ${
+                          contentType === type.value
+                            ? 'ring-2 ring-purple-600 bg-purple-50'
+                            : 'hover:bg-gray-50'
+                        }`}
+                        onClick={() => setContentType(type.value)}
+                      >
+                        <CardContent className="p-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <span className="text-xl">{type.icon}</span>
+                              <div>
+                                <div className="font-medium flex items-center gap-2">
+                                  {type.label}
+                                  {type.recommended && (
+                                    <Badge className="bg-yellow-100 text-yellow-800 text-xs">
+                                      Recomendado
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="text-sm text-gray-600">{type.description}</div>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+
+                    {contentType === 'custom' && (
+                      <div className="space-y-2">
+                        <Label htmlFor="custom-topic">Tema Personalizado</Label>
+                        <Input
+                          id="custom-topic"
+                          value={customTopic}
+                          onChange={(e) => setCustomTopic(e.target.value)}
+                          placeholder="Ex: Robôs aprendendo a dançar, Futuro da IA..."
+                        />
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center gap-2">
+                      <Globe className="h-5 w-5 text-orange-600" />
+                      <CardTitle className="text-lg">País/Regional</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <Select value={country} onValueChange={setCountry}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="BR">🇧🇷 Brasil</SelectItem>
+                        <SelectItem value="US">🇺🇸 Estados Unidos</SelectItem>
+                        <SelectItem value="ES">🇪🇸 Espanha</SelectItem>
+                        <SelectItem value="MX">🇲🇽 México</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Right Panel - Preview */}
+              <div className="space-y-6">
+                <Card className="bg-gradient-to-br from-purple-50 to-blue-50">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Zap className="h-5 w-5 text-yellow-600" />
+                      Preview do Vídeo
+                    </CardTitle>
+                    <CardDescription>
+                      Como seu vídeo será estruturado
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 p-3 bg-white rounded-lg">
+                        <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                          <span className="text-sm font-bold text-purple-700">{character.name[0]}</span>
+                        </div>
+                        <div>
+                          <div className="font-medium">{character.name}</div>
+                          <div className="text-sm text-gray-600">Protagonista</div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="text-sm font-medium">Estrutura:</div>
+                        {Array.from({ length: Math.ceil(duration / 8) }, (_, i) => (
+                          <div key={i} className="flex items-center gap-3 p-2 bg-white rounded">
+                            <div className="w-6 h-6 bg-blue-100 rounded text-xs flex items-center justify-center text-blue-700 font-bold">
+                              {i + 1}
+                            </div>
+                            <div className="text-sm">
+                              Bloco {i + 1} ({i * 8}-{Math.min((i + 1) * 8, duration)}s)
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <div className="text-sm font-medium text-yellow-800 mb-1">💡 Dica Pro:</div>
+                        <div className="text-sm text-yellow-700">
+                          Vídeos de {duration}s têm {duration <= 24 ? 'alta' : duration <= 40 ? 'boa' : 'média'} taxa de retenção
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Button
+                  onClick={generateVideo}
+                  disabled={loading || (contentType === 'custom' && !customTopic)}
+                  className="w-full h-12 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-lg"
+                >
+                  {loading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      Gerando Roteiro Viral...
+                    </div>
+                  ) : (
+                    <>
+                      <Sparkles className="h-5 w-5 mr-2" />
+                      Gerar Roteiro Viral
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            // Generated Video Display
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-2xl font-bold text-green-600 flex items-center gap-2">
+                  <CheckCircle className="h-6 w-6" />
+                  Roteiro Viral Gerado!
+                </h3>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => copyToClipboard(formatFullScript(generatedVideo))}
+                    variant="outline"
+                  >
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copiar Tudo
+                  </Button>
+                  <Button onClick={() => setGeneratedVideo(null)}>
+                    Gerar Novo
+                  </Button>
+                </div>
+              </div>
+
+              <Card className="bg-gradient-to-r from-green-50 to-blue-50">
+                <CardHeader>
+                  <CardTitle className="text-xl">{generatedVideo.title}</CardTitle>
+                  <CardDescription>
+                    {generatedVideo.duration_seconds}s • {generatedVideo.blocks.length} blocos • {generatedVideo.content_type}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div className="p-3 bg-white rounded-lg">
+                      <div className="text-2xl font-bold text-blue-600">{generatedVideo.blocks.length}</div>
+                      <div className="text-sm text-gray-600">Blocos</div>
+                    </div>
+                    <div className="p-3 bg-white rounded-lg">
+                      <div className="text-2xl font-bold text-green-600">{generatedVideo.duration_seconds}s</div>
+                      <div className="text-sm text-gray-600">Duração</div>
+                    </div>
+                    <div className="p-3 bg-white rounded-lg">
+                      <div className="text-2xl font-bold text-purple-600">
+                        {generatedVideo.hashtags.tiktok.length + generatedVideo.hashtags.instagram.length + generatedVideo.hashtags.youtube.length}
+                      </div>
+                      <div className="text-sm text-gray-600">Hashtags</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Video Blocks */}
+              <div className="space-y-4">
+                <h4 className="text-lg font-semibold">Roteiro Detalhado:</h4>
+                {generatedVideo.blocks.map((block) => (
+                  <Card key={block.number} className="relative">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg">
+                          Bloco {block.number} ({block.duration})
+                        </CardTitle>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => copyToClipboard(
+                            `BLOCO ${block.number} (${block.duration})\nScene: ${block.scene}\nCharacter: ${block.character}\nCamera: ${block.camera}\nSetting: ${block.setting}\nLighting: ${block.lighting}\nAudio: ${block.audio}${block.transition ? `\nTransition: ${block.transition}` : ''}`,
+                            block.number
+                          )}
+                        >
+                          {copiedBlock === block.number ? (
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div>
+                        <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Cena</Label>
+                        <p className="text-sm mt-1">{block.scene}</p>
+                      </div>
+                      <div>
+                        <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Personagem</Label>
+                        <p className="text-sm mt-1">{block.character}</p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Câmera</Label>
+                          <p className="text-sm mt-1">{block.camera}</p>
+                        </div>
+                        <div>
+                          <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Cenário</Label>
+                          <p className="text-sm mt-1">{block.setting}</p>
+                        </div>
+                      </div>
+                      <div>
+                        <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Iluminação</Label>
+                        <p className="text-sm mt-1">{block.lighting}</p>
+                      </div>
+                      <div>
+                        <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Áudio/Fala</Label>
+                        <p className="text-sm mt-1 font-medium text-blue-700">{block.audio}</p>
+                      </div>
+                      {block.transition && (
+                        <div>
+                          <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Transição</Label>
+                          <p className="text-sm mt-1">{block.transition}</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Hashtags */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Hashtags Otimizadas</CardTitle>
+                  <CardDescription>
+                    Hashtags geradas especificamente para maximizar o alcance em cada plataforma
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label className="font-semibold text-red-600 mb-2 block">TikTok ({generatedVideo.hashtags.tiktok.length} tags)</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {generatedVideo.hashtags.tiktok.map((tag, index) => (
+                        <Badge key={index} variant="secondary" className="bg-red-100 text-red-800">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-2"
+                      onClick={() => copyToClipboard(generatedVideo.hashtags.tiktok.join(' '))}
+                    >
+                      <Copy className="h-3 w-3 mr-1" />
+                      Copiar TikTok
+                    </Button>
+                  </div>
+
+                  <div>
+                    <Label className="font-semibold text-pink-600 mb-2 block">Instagram ({generatedVideo.hashtags.instagram.length} tags)</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {generatedVideo.hashtags.instagram.map((tag, index) => (
+                        <Badge key={index} variant="secondary" className="bg-pink-100 text-pink-800">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-2"
+                      onClick={() => copyToClipboard(generatedVideo.hashtags.instagram.join(' '))}
+                    >
+                      <Copy className="h-3 w-3 mr-1" />
+                      Copiar Instagram
+                    </Button>
+                  </div>
+
+                  <div>
+                    <Label className="font-semibold text-blue-600 mb-2 block">YouTube ({generatedVideo.hashtags.youtube.length} tags)</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {generatedVideo.hashtags.youtube.map((tag, index) => (
+                        <Badge key={index} variant="secondary" className="bg-blue-100 text-blue-800">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-2"
+                      onClick={() => copyToClipboard(generatedVideo.hashtags.youtube.join(' '))}
+                    >
+                      <Copy className="h-3 w-3 mr-1" />
+                      Copiar YouTube
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

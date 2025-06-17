@@ -9,7 +9,230 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      characters: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          personality: string
+          updated_at: string | null
+          user_id: string | null
+          visual_prompt: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          personality: string
+          updated_at?: string | null
+          user_id?: string | null
+          visual_prompt: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          personality?: string
+          updated_at?: string | null
+          user_id?: string | null
+          visual_prompt?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "characters_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      metrics: {
+        Row: {
+          ai_analysis: Json | null
+          captured_at: string | null
+          comments: number | null
+          id: string
+          improvements_applied: boolean | null
+          likes: number | null
+          platform: string | null
+          retention_rate: number | null
+          screenshot_url: string
+          shares: number | null
+          video_id: string | null
+          views: number | null
+        }
+        Insert: {
+          ai_analysis?: Json | null
+          captured_at?: string | null
+          comments?: number | null
+          id?: string
+          improvements_applied?: boolean | null
+          likes?: number | null
+          platform?: string | null
+          retention_rate?: number | null
+          screenshot_url: string
+          shares?: number | null
+          video_id?: string | null
+          views?: number | null
+        }
+        Update: {
+          ai_analysis?: Json | null
+          captured_at?: string | null
+          comments?: number | null
+          id?: string
+          improvements_applied?: boolean | null
+          likes?: number | null
+          platform?: string | null
+          retention_rate?: number | null
+          screenshot_url?: string
+          shares?: number | null
+          video_id?: string | null
+          views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "metrics_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prompt_templates: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          success_rate: number | null
+          template: string
+          updated_at: string | null
+          user_id: string | null
+          variables: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          success_rate?: number | null
+          template: string
+          updated_at?: string | null
+          user_id?: string | null
+          variables?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          success_rate?: number | null
+          template?: string
+          updated_at?: string | null
+          user_id?: string | null
+          variables?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prompt_templates_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          created_at: string | null
+          daily_generations: number | null
+          email: string
+          id: string
+          plan: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          daily_generations?: number | null
+          email: string
+          id?: string
+          plan?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          daily_generations?: number | null
+          email?: string
+          id?: string
+          plan?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      videos: {
+        Row: {
+          blocks: Json
+          character_id: string | null
+          content_type: string | null
+          country_code: string | null
+          created_at: string | null
+          duration_seconds: number | null
+          hashtags: Json
+          id: string
+          status: string | null
+          title: string
+          total_views: number | null
+          trending_topic: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          blocks?: Json
+          character_id?: string | null
+          content_type?: string | null
+          country_code?: string | null
+          created_at?: string | null
+          duration_seconds?: number | null
+          hashtags?: Json
+          id?: string
+          status?: string | null
+          title: string
+          total_views?: number | null
+          trending_topic?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          blocks?: Json
+          character_id?: string | null
+          content_type?: string | null
+          country_code?: string | null
+          created_at?: string | null
+          duration_seconds?: number | null
+          hashtags?: Json
+          id?: string
+          status?: string | null
+          title?: string
+          total_views?: number | null
+          trending_topic?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "videos_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
