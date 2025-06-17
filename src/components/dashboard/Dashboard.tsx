@@ -53,10 +53,36 @@ export default function Dashboard() {
     if (!error && data) {
       // Convert Supabase response to our Video type
       const typedVideos = data.map(video => {
-        // Parse blocks from Json to VideoBlock[]
+        // Safely parse blocks from Json to VideoBlock[]
         let blocks: VideoBlock[] = [];
         if (Array.isArray(video.blocks)) {
-          blocks = video.blocks as VideoBlock[];
+          blocks = video.blocks.map((block: any) => {
+            // Validate and convert each block
+            if (typeof block === 'object' && block.number && block.duration) {
+              return {
+                number: block.number,
+                duration: block.duration,
+                scene: block.scene || '',
+                character: block.character || '',
+                camera: block.camera || '',
+                setting: block.setting || '',
+                lighting: block.lighting || '',
+                audio: block.audio || '',
+                transition: block.transition
+              } as VideoBlock;
+            }
+            // Return a default VideoBlock if validation fails
+            return {
+              number: 1,
+              duration: '0s',
+              scene: '',
+              character: '',
+              camera: '',
+              setting: '',
+              lighting: '',
+              audio: ''
+            } as VideoBlock;
+          });
         }
 
         // Parse hashtags from Json to our hashtag structure
