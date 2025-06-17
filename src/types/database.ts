@@ -82,3 +82,11 @@ export interface PromptTemplate {
   created_at: string;
   updated_at: string;
 }
+
+export interface AIAnalysis {
+  strengths: string[];
+  improvements: string[];
+  patterns: string[];
+  overall_score: number;
+  recommendations: string[];
+}

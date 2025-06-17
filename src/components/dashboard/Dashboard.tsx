@@ -5,10 +5,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { Character, Video, VideoBlock } from '@/types/database';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Video as VideoIcon, TrendingUp, Sparkles, User, LogOut } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Plus, Video as VideoIcon, TrendingUp, Sparkles, User, LogOut, BarChart3, Template, Eye } from 'lucide-react';
 import { CharacterCard } from './CharacterCard';
 import { CreateCharacterDialog } from './CreateCharacterDialog';
 import { VideoGenerator } from './VideoGenerator';
+import { VideoScriptViewer } from './VideoScriptViewer';
+import { MetricsAnalyzer } from './MetricsAnalyzer';
+import { TemplateManager } from './TemplateManager';
 
 export default function Dashboard() {
   const { user, userProfile, signOut } = useAuth();
@@ -18,6 +22,10 @@ export default function Dashboard() {
   const [showCreateCharacter, setShowCreateCharacter] = useState(false);
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
   const [showVideoGenerator, setShowVideoGenerator] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+  const [showVideoViewer, setShowVideoViewer] = useState(false);
+  const [showMetricsAnalyzer, setShowMetricsAnalyzer] = useState(false);
+  const [selectedVideoForMetrics, setSelectedVideoForMetrics] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -47,17 +55,15 @@ export default function Dashboard() {
         *,
         characters (name, avatar_url)
       `)
-      .order('created_at', { ascending: false })
-      .limit(10);
+      .order('created_at', { ascending: false });
 
     if (!error && data) {
-      // Convert Supabase response to our Video type
+      // Safely convert Supabase data to our Video type
       const typedVideos = data.map(video => {
-        // Safely parse blocks from Json to VideoBlock[]
+        // Safely parse blocks
         let blocks: VideoBlock[] = [];
         if (Array.isArray(video.blocks)) {
           blocks = video.blocks.map((block: any) => {
-            // Validate and convert each block
             if (typeof block === 'object' && block.number && block.duration) {
               return {
                 number: block.number,
@@ -71,7 +77,6 @@ export default function Dashboard() {
                 transition: block.transition
               } as VideoBlock;
             }
-            // Return a default VideoBlock if validation fails
             return {
               number: 1,
               duration: '0s',
@@ -85,7 +90,7 @@ export default function Dashboard() {
           });
         }
 
-        // Parse hashtags from Json to our hashtag structure
+        // Safely parse hashtags
         let hashtags = { tiktok: [], instagram: [], youtube: [] };
         if (video.hashtags && typeof video.hashtags === 'object' && !Array.isArray(video.hashtags)) {
           const hashtagsObj = video.hashtags as any;
@@ -136,6 +141,28 @@ export default function Dashboard() {
   const handleGenerateVideo = (character: Character) => {
     setSelectedCharacter(character);
     setShowVideoGenerator(true);
+  };
+
+  const handleViewVideo = (video: Video) => {
+    setSelectedVideo(video);
+    setShowVideoViewer(true);
+  };
+
+  const handleAnalyzeMetrics = (videoId: string) => {
+    setSelectedVideoForMetrics(videoId);
+    setShowMetricsAnalyzer(true);
+  };
+
+  const handleDeleteVideo = async (videoId: string) => {
+    const { error } = await supabase
+      .from('videos')
+      .delete()
+      .eq('id', videoId);
+
+    if (!error) {
+      setVideos(videos.filter(v => v.id !== videoId));
+      setShowVideoViewer(false);
+    }
   };
 
   const totalViews = videos.reduce((sum, video) => sum + video.total_views, 0);
@@ -234,72 +261,165 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Characters Section */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Seus Personagens</h2>
-            
-            {canCreateMore && (
-              <Button onClick={() => setShowCreateCharacter(true)} className="bg-purple-600 hover:bg-purple-700">
-                <Plus className="h-4 w-4 mr-2" />
-                Novo Personagem
-              </Button>
-            )}
-          </div>
+        {/* Main Content with Tabs */}
+        <Tabs defaultValue="characters" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="characters" className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              Personagens
+            </TabsTrigger>
+            <TabsTrigger value="videos" className="flex items-center gap-2">
+              <VideoIcon className="h-4 w-4" />
+              Roteiros
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Analytics
+            </TabsTrigger>
+            <TabsTrigger value="templates" className="flex items-center gap-2">
+              <Template className="h-4 w-4" />
+              Templates
+            </TabsTrigger>
+          </TabsList>
 
-          {characters.length === 0 ? (
-            <Card className="p-12 text-center">
-              <div className="flex flex-col items-center gap-4">
-                <User className="h-16 w-16 text-gray-400" />
-                <h3 className="text-xl font-semibold text-gray-600">Nenhum personagem ainda</h3>
-                <p className="text-gray-500 max-w-md">
-                  Crie seu primeiro personagem para começar a gerar vídeos virais com IA.
-                  Cada personagem tem sua própria personalidade e estilo visual.
-                </p>
-                <Button onClick={() => setShowCreateCharacter(true)} className="mt-4">
+          <TabsContent value="characters" className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900">Seus Personagens</h2>
+              
+              {canCreateMore && (
+                <Button onClick={() => setShowCreateCharacter(true)} className="bg-purple-600 hover:bg-purple-700">
                   <Plus className="h-4 w-4 mr-2" />
-                  Criar Primeiro Personagem
+                  Novo Personagem
                 </Button>
-              </div>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {characters.map((character) => (
-                <CharacterCard
-                  key={character.id}
-                  character={character}
-                  onGenerateVideo={() => handleGenerateVideo(character)}
-                  videoCount={videos.filter(v => v.character_id === character.id).length}
-                />
-              ))}
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Recent Videos */}
-        {videos.length > 0 && (
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Vídeos Recentes</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {videos.slice(0, 6).map((video) => (
-                <Card key={video.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="text-lg">{video.title}</CardTitle>
-                    <CardDescription>
-                      {video.duration_seconds}s • {video.content_type}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between text-sm text-gray-600">
-                      <span>{video.blocks.length} blocos</span>
-                      <span>{video.total_views} views</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+            {characters.length === 0 ? (
+              <Card className="p-12 text-center">
+                <div className="flex flex-col items-center gap-4">
+                  <User className="h-16 w-16 text-gray-400" />
+                  <h3 className="text-xl font-semibold text-gray-600">Nenhum personagem ainda</h3>
+                  <p className="text-gray-500 max-w-md">
+                    Crie seu primeiro personagem para começar a gerar vídeos virais com IA.
+                  </p>
+                  <Button onClick={() => setShowCreateCharacter(true)} className="mt-4">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Criar Primeiro Personagem
+                  </Button>
+                </div>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {characters.map((character) => (
+                  <CharacterCard
+                    key={character.id}
+                    character={character}
+                    onGenerateVideo={() => handleGenerateVideo(character)}
+                    videoCount={videos.filter(v => v.character_id === character.id).length}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="videos" className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900">Roteiros Criados</h2>
+              <p className="text-gray-600">{videos.length} roteiros gerados</p>
             </div>
-          </div>
-        )}
+
+            {videos.length === 0 ? (
+              <Card className="p-12 text-center">
+                <div className="flex flex-col items-center gap-4">
+                  <VideoIcon className="h-16 w-16 text-gray-400" />
+                  <h3 className="text-xl font-semibold text-gray-600">Nenhum roteiro ainda</h3>
+                  <p className="text-gray-500 max-w-md">
+                    Gere seu primeiro roteiro viral usando um dos seus personagens.
+                  </p>
+                </div>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {videos.map((video) => (
+                  <Card key={video.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg line-clamp-2">{video.title}</CardTitle>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleViewVideo(video)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <CardDescription>
+                        {video.duration_seconds}s • {video.content_type} • {video.blocks.length} blocos
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between text-sm text-gray-600">
+                          <span>{video.total_views} views</span>
+                          <span className={`px-2 py-1 rounded-full text-xs ${
+                            video.status === 'published' 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {video.status}
+                          </span>
+                        </div>
+                        
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => handleViewVideo(video)}
+                            className="flex-1"
+                          >
+                            Ver Roteiro
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleAnalyzeMetrics(video.id)}
+                          >
+                            <BarChart3 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="analytics" className="space-y-6">
+            {selectedVideoForMetrics ? (
+              <MetricsAnalyzer
+                videoId={selectedVideoForMetrics}
+                onAnalysisComplete={() => {
+                  setSelectedVideoForMetrics(null);
+                  fetchVideos();
+                }}
+              />
+            ) : (
+              <Card className="p-12 text-center">
+                <div className="flex flex-col items-center gap-4">
+                  <BarChart3 className="h-16 w-16 text-gray-400" />
+                  <h3 className="text-xl font-semibold text-gray-600">Analisador de Performance</h3>
+                  <p className="text-gray-500 max-w-md">
+                    Selecione um vídeo da aba "Roteiros" para analisar sua performance com IA.
+                  </p>
+                </div>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="templates" className="space-y-6">
+            <TemplateManager />
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Dialogs */}
@@ -315,6 +435,19 @@ export default function Dashboard() {
         character={selectedCharacter}
         onVideoGenerated={fetchVideos}
       />
+
+      {selectedVideo && (
+        <VideoScriptViewer
+          video={selectedVideo}
+          open={showVideoViewer}
+          onOpenChange={setShowVideoViewer}
+          onEdit={(video) => {
+            // Future: implement video editing
+            console.log('Edit video:', video);
+          }}
+          onDelete={handleDeleteVideo}
+        />
+      )}
     </div>
   );
 }
