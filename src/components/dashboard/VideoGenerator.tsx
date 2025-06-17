@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Character, Video, VideoBlock } from '@/types/database';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -109,6 +108,10 @@ export function VideoGenerator({ open, onOpenChange, character, onVideoGenerated
         ? `${character.name}: História de Arrepiar`
         : `${character.name}: ${customTopic}`;
 
+      // Convert blocks and hashtags to Json for Supabase
+      const blocksAsJson = JSON.parse(JSON.stringify(blocks));
+      const hashtagsAsJson = JSON.parse(JSON.stringify(hashtags));
+
       // Save to database
       const { data: video, error } = await supabase
         .from('videos')
@@ -116,8 +119,8 @@ export function VideoGenerator({ open, onOpenChange, character, onVideoGenerated
           character_id: character.id,
           title,
           duration_seconds: duration,
-          blocks,
-          hashtags,
+          blocks: blocksAsJson,
+          hashtags: hashtagsAsJson,
           country_code: country,
           content_type: contentType as 'trending' | 'horror' | 'comedy' | 'custom',
           trending_topic: contentType === 'custom' ? customTopic : null,
@@ -128,14 +131,14 @@ export function VideoGenerator({ open, onOpenChange, character, onVideoGenerated
       if (error) throw error;
 
       if (video) {
-        // Convert to our Video type
+        // Convert back to our Video type
         const typedVideo: Video = {
           ...video,
           duration_seconds: video.duration_seconds as number,
           content_type: video.content_type as 'trending' | 'horror' | 'comedy' | 'custom',
           status: video.status as 'draft' | 'published' | 'archived',
-          blocks: Array.isArray(video.blocks) ? video.blocks : [],
-          hashtags: video.hashtags || { tiktok: [], instagram: [], youtube: [] }
+          blocks: blocks,
+          hashtags: hashtags
         };
         
         setGeneratedVideo(typedVideo);

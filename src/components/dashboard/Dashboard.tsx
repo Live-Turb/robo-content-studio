@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Character, Video } from '@/types/database';
+import { Character, Video, VideoBlock } from '@/types/database';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Video as VideoIcon, TrendingUp, Sparkles, User, LogOut } from 'lucide-react';
@@ -52,14 +52,33 @@ export default function Dashboard() {
 
     if (!error && data) {
       // Convert Supabase response to our Video type
-      const typedVideos = data.map(video => ({
-        ...video,
-        duration_seconds: video.duration_seconds as number,
-        content_type: video.content_type as 'trending' | 'horror' | 'comedy' | 'custom',
-        status: video.status as 'draft' | 'published' | 'archived',
-        blocks: Array.isArray(video.blocks) ? video.blocks : [],
-        hashtags: video.hashtags || { tiktok: [], instagram: [], youtube: [] }
-      }));
+      const typedVideos = data.map(video => {
+        // Parse blocks from Json to VideoBlock[]
+        let blocks: VideoBlock[] = [];
+        if (Array.isArray(video.blocks)) {
+          blocks = video.blocks as VideoBlock[];
+        }
+
+        // Parse hashtags from Json to our hashtag structure
+        let hashtags = { tiktok: [], instagram: [], youtube: [] };
+        if (video.hashtags && typeof video.hashtags === 'object' && !Array.isArray(video.hashtags)) {
+          const hashtagsObj = video.hashtags as any;
+          hashtags = {
+            tiktok: Array.isArray(hashtagsObj.tiktok) ? hashtagsObj.tiktok : [],
+            instagram: Array.isArray(hashtagsObj.instagram) ? hashtagsObj.instagram : [],
+            youtube: Array.isArray(hashtagsObj.youtube) ? hashtagsObj.youtube : []
+          };
+        }
+
+        return {
+          ...video,
+          duration_seconds: video.duration_seconds as number,
+          content_type: video.content_type as 'trending' | 'horror' | 'comedy' | 'custom',
+          status: video.status as 'draft' | 'published' | 'archived',
+          blocks,
+          hashtags
+        };
+      });
       
       setVideos(typedVideos as Video[]);
     }
