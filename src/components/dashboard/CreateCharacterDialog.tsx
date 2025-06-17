@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Character } from '@/types/database';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -9,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Sparkles, User, Palette, Brain } from 'lucide-react';
+import { Sparkles, User, Palette, Brain, Eye } from 'lucide-react';
 
 interface CreateCharacterDialogProps {
   open: boolean;
@@ -59,6 +58,14 @@ const PERSONALITY_PRESETS = [
   }
 ];
 
+const LANGUAGE_OPTIONS = [
+  { value: 'pt-BR', label: '🇧🇷 Português (Brasil)' },
+  { value: 'en-US', label: '🇺🇸 English (USA)' },
+  { value: 'es-ES', label: '🇪🇸 Español (España)' },
+  { value: 'es-MX', label: '🇲🇽 Español (México)' },
+  { value: 'fr-FR', label: '🇫🇷 Français (France)' },
+];
+
 export function CreateCharacterDialog({ open, onOpenChange, onCreateCharacter }: CreateCharacterDialogProps) {
   const [step, setStep] = useState(1);
   const [name, setName] = useState('');
@@ -66,6 +73,7 @@ export function CreateCharacterDialog({ open, onOpenChange, onCreateCharacter }:
   const [customVisual, setCustomVisual] = useState('');
   const [selectedPersonality, setSelectedPersonality] = useState('');
   const [customPersonality, setCustomPersonality] = useState('');
+  const [language, setLanguage] = useState('pt-BR');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -76,6 +84,7 @@ export function CreateCharacterDialog({ open, onOpenChange, onCreateCharacter }:
     setCustomVisual('');
     setSelectedPersonality('');
     setCustomPersonality('');
+    setLanguage('pt-BR');
   };
 
   const handleCreate = async () => {
@@ -98,11 +107,14 @@ export function CreateCharacterDialog({ open, onOpenChange, onCreateCharacter }:
       ? PERSONALITY_PRESETS.find(p => p.id === selectedPersonality)?.personality || ''
       : customPersonality;
 
+    // Add language to personality
+    const personalityWithLanguage = `${personality} | Audio Language: ${language}`;
+
     try {
       await onCreateCharacter({
         name,
         visual_prompt: visualPrompt,
-        personality,
+        personality: personalityWithLanguage,
       });
 
       toast({
@@ -132,14 +144,14 @@ export function CreateCharacterDialog({ open, onOpenChange, onCreateCharacter }:
             Criar Novo Personagem
           </DialogTitle>
           <DialogDescription>
-            Crie um personagem único para seus vídeos virais em 3 passos simples
+            Crie um personagem único para seus vídeos virais em 4 passos simples
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* Progress */}
           <div className="flex items-center justify-between">
-            {[1, 2, 3].map((stepNumber) => (
+            {[1, 2, 3, 4].map((stepNumber) => (
               <div key={stepNumber} className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
                   step >= stepNumber 
@@ -148,8 +160,8 @@ export function CreateCharacterDialog({ open, onOpenChange, onCreateCharacter }:
                 }`}>
                   {stepNumber}
                 </div>
-                {stepNumber < 3 && (
-                  <div className={`w-20 h-1 mx-4 ${
+                {stepNumber < 4 && (
+                  <div className={`w-16 h-1 mx-4 ${
                     step > stepNumber ? 'bg-purple-600' : 'bg-gray-200'
                   }`} />
                 )}
@@ -157,23 +169,44 @@ export function CreateCharacterDialog({ open, onOpenChange, onCreateCharacter }:
             ))}
           </div>
 
-          {/* Step 1: Name */}
+          {/* Step 1: Name and Language */}
           {step === 1 && (
             <div className="space-y-4">
               <div className="flex items-center gap-2 mb-4">
                 <User className="h-5 w-5 text-purple-600" />
-                <h3 className="text-lg font-semibold">Nome do Personagem</h3>
+                <h3 className="text-lg font-semibold">Nome e Idioma</h3>
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="name">Como seu personagem se chama?</Label>
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Ex: Robô Max, Luna Tech, Professor Silva..."
-                  className="text-lg"
-                />
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="name">Como seu personagem se chama?</Label>
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Ex: Robô Max, Luna Tech, Professor Silva..."
+                    className="text-lg"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="language">Idioma do Áudio</Label>
+                  <Select value={language} onValueChange={setLanguage}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LANGUAGE_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Apenas o áudio será no idioma selecionado. O restante do prompt será em inglês.
+                  </p>
+                </div>
               </div>
 
               <div className="flex justify-end">
@@ -300,8 +333,72 @@ export function CreateCharacterDialog({ open, onOpenChange, onCreateCharacter }:
                   Voltar
                 </Button>
                 <Button 
+                  onClick={() => setStep(4)} 
+                  disabled={!selectedPersonality && !customPersonality}
+                  className="bg-purple-600 hover:bg-purple-700"
+                >
+                  Próximo
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 4: Review */}
+          {step === 4 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 mb-4">
+                <Eye className="h-5 w-5 text-purple-600" />
+                <h3 className="text-lg font-semibold">Revisar e Criar</h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm">Resumo do Personagem</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <div>
+                      <Label className="text-xs font-semibold text-gray-500">Nome</Label>
+                      <p className="font-medium">{name}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs font-semibold text-gray-500">Idioma do Áudio</Label>
+                      <p>{LANGUAGE_OPTIONS.find(l => l.value === language)?.label}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs font-semibold text-gray-500">Tipo Visual</Label>
+                      <p>{selectedVisual ? VISUAL_PRESETS.find(v => v.id === selectedVisual)?.name : 'Personalizado'}</p>
+                    </div>
+                    <div>
+                      <Label className="text-xs font-semibold text-gray-500">Personalidade</Label>
+                      <p>{selectedPersonality ? PERSONALITY_PRESETS.find(p => p.id === selectedPersonality)?.name : 'Personalizada'}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-purple-50 to-blue-50">
+                  <CardHeader>
+                    <CardTitle className="text-sm">Otimização TikTok</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2 text-sm">
+                      <p>✅ Personagem consistente em todos os blocos</p>
+                      <p>✅ Áudio em {LANGUAGE_OPTIONS.find(l => l.value === language)?.label.split(' ')[1]}</p>
+                      <p>✅ Integração automática TikTok Shop</p>
+                      <p>✅ Hashtags otimizadas por país</p>
+                      <p>✅ Trending topics em tempo real</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="flex justify-between">
+                <Button variant="outline" onClick={() => setStep(3)}>
+                  Voltar
+                </Button>
+                <Button 
                   onClick={handleCreate} 
-                  disabled={loading || (!selectedPersonality && !customPersonality)}
+                  disabled={loading}
                   className="bg-purple-600 hover:bg-purple-700"
                 >
                   {loading ? "Criando..." : "Criar Personagem"}

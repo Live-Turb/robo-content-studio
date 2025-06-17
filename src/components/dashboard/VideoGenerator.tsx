@@ -72,41 +72,134 @@ export function VideoGenerator({ open, onOpenChange, character, onVideoGenerated
     setLoading(true);
 
     try {
-      // Simulate AI video generation
+      // Extract language from character
+      const audioLanguage = character.personality.match(/Audio Language:\s*([a-z-A-Z]+)/)?.[1] || 'pt-BR';
+      const getLanguageName = (code: string) => {
+        const names: Record<string, string> = {
+          'pt-BR': 'Brazilian Portuguese',
+          'en-US': 'English',
+          'es-ES': 'Spanish',
+          'es-MX': 'Mexican Spanish',
+          'fr-FR': 'French'
+        };
+        return names[code] || 'Portuguese';
+      };
+
+      // Generate optimized blocks with new template
       const blockCount = Math.ceil(duration / 8);
       const blocks: VideoBlock[] = [];
 
+      // Get trending topic or custom topic
+      const topicContext = contentType === 'trending' 
+        ? 'current viral TikTok trend with dancing and product showcase'
+        : contentType === 'comedy'
+        ? 'funny viral moment with product integration'
+        : contentType === 'horror'
+        ? 'suspenseful moment with unexpected product reveal'
+        : customTopic;
+
       for (let i = 1; i <= blockCount; i++) {
         const blockDuration = i === blockCount ? duration - (i - 1) * 8 : 8;
+        const timeRange = `${(i - 1) * 8}-${(i - 1) * 8 + blockDuration}s`;
         
+        // Enhanced scene descriptions with TikTok optimization
+        const sceneDescriptions = [
+          `${character.name} is in a vibrant urban setting with neon-lit graffiti walls and puddles reflecting colorful lights. The character ${i === 1 ? 'confidently points at camera and starts a viral dance challenge' : i === 2 ? 'performs an exaggerated dance move that causes a comedic accident with their outfit' : 'strikes a dramatic pose while showcasing the featured product'}. The scene focuses on ${i === 1 ? 'establishing the character and trend' : i === 2 ? 'peak comedy and product visibility' : 'clear call-to-action and product highlight'}.`,
+          
+          `In a modern tech-savvy environment with holographic displays and cyberpunk aesthetics, ${character.name} ${i === 1 ? 'discovers a trending product and reacts with exaggerated surprise' : i === 2 ? 'tries to use the product in an unexpectedly funny way' : 'successfully uses the product and celebrates with a signature move'}. The lighting emphasizes ${i === 1 ? 'curiosity and discovery' : i === 2 ? 'comedy and mishaps' : 'success and satisfaction'}.`,
+          
+          `${character.name} is in a vibrant shopping district with TikTok Shop-style displays everywhere. The character ${i === 1 ? 'browses products while performing trending moves' : i === 2 ? 'accidentally creates a viral moment while testing a product' : 'confidently recommends the product with a direct sales pitch'}. The scene includes ${i === 1 ? 'multiple product options and decision-making' : i === 2 ? 'product demonstration gone funny' : 'clear product benefits and purchase incentive'}.`
+        ];
+
+        // Camera specifications for each block
+        const cameraSpecs = [
+          `${i === 1 ? 'Medium shot' : i === 2 ? 'Wide shot' : 'Close-up'}, 35mm lens, ${i % 2 === 0 ? 'handheld style for dynamic energy' : 'smooth tracking for professional look'}, focus on ${i === 1 ? 'character introduction and trend setup' : i === 2 ? 'action and product interaction' : 'product details and call-to-action'}`,
+          
+          `${i === 1 ? 'Dutch angle medium shot' : i === 2 ? 'Split screen showing character and product' : 'Extreme close-up on product'}, 24mm lens, ${i === 1 ? 'slow push-in for drama' : i === 2 ? 'quick cuts for comedy timing' : 'steady focus for clarity'}, emphasizing ${i === 1 ? 'character personality' : i === 2 ? 'product features' : 'purchase urgency'}`
+        ];
+
+        // Lighting specifications optimized for TikTok
+        const lightingSpecs = [
+          `${i === 1 ? 'Neon backlighting with purple and blue tones' : i === 2 ? 'Strobe effects synchronized with music' : 'Soft key lighting highlighting the product'}, ${i % 2 === 0 ? 'high contrast for drama' : 'warm tones for approachability'}, ensuring ${i === 1 ? 'mysterious and trendy atmosphere' : i === 2 ? 'energetic and fun vibe' : 'clear product visibility'}`,
+          
+          `${i === 1 ? 'Rim lighting creating character silhouette' : i === 2 ? 'Color-changing LED effects' : 'Product spotlight with background bokeh'}, cinematographic quality with ${i === 1 ? 'moody undertones' : i === 2 ? 'vibrant saturation' : 'commercial-grade clarity'}`
+        ];
+
+        // Audio with specified language and TikTok optimization
+        const audioLines = [
+          `Voice in ${getLanguageName(audioLanguage)}: "${character.name}: ${i === 1 ? 'Descobri a tendência viral do momento!' : i === 2 ? 'Olha só o que aconteceu quando tentei!' : 'Pega o seu no TikTok Shop! Link na bio! 🛒✨'}" with ${i === 1 ? 'trending Brazilian funk remix' : i === 2 ? 'comedic sound effects and music continuation' : 'upbeat conclusion with purchase incentive sounds'}`,
+          
+          `Audio in ${getLanguageName(audioLanguage)}: "${character.name}: ${i === 1 ? 'This trend is about to blow up!' : i === 2 ? 'Wait, this is not how it was supposed to work!' : 'Get yours now on TikTok Shop! Don\'t wait! 🔥'}" with ${i === 1 ? 'viral TikTok sound trending in ' + country : i === 2 ? 'glitch effects and unexpected sounds' : 'call-to-action music with urgency'}`
+        ];
+
+        // Transitions optimized for TikTok retention
+        const transitions = [
+          i < blockCount ? `${i === 1 ? 'Quick zoom with glitch effect' : 'Speed ramp to freeze frame'}` : 'Freeze on product with pulsing CTA text',
+          i < blockCount ? `${i === 1 ? 'Swipe transition with trend hashtag overlay' : 'Jump cut with sound sync'}` : 'End screen with TikTok Shop button animation'
+        ];
+
         blocks.push({
           number: i,
-          duration: `${(i - 1) * 8}-${(i - 1) * 8 + blockDuration}s`,
-          scene: `Cena ${i}: ${character.name} em ação dinâmica que prende a atenção do viewer desde o primeiro segundo`,
-          character: character.visual_prompt,
-          camera: `${i === 1 ? 'Medium shot' : i === blockCount ? 'Close-up' : 'Wide shot'}, 35mm lens, ${i % 2 === 0 ? 'handheld style' : 'smooth tracking'}`,
-          setting: `Ambiente moderno e vibrante que complementa a personalidade do personagem`,
-          lighting: `${i % 2 === 0 ? 'Neon backlighting' : 'Soft key lighting'}, cinematográfico, cores vibrantes`,
-          audio: `"${character.name}: Frase impactante que gera engajamento e conecta com a audiência!"`,
-          transition: i < blockCount ? `${i % 2 === 0 ? 'Quick cut' : 'Smooth transition'}` : 'Freeze on impactful pose'
+          duration: timeRange,
+          scene: sceneDescriptions[Math.min(i - 1, 2)],
+          character: `${character.visual_prompt}. IMPORTANT: Maintain exact same visual specifications across all blocks for consistency. The character should be immediately recognizable in every frame.`,
+          camera: cameraSpecs[Math.min(Math.floor(Math.random() * 2), 1)],
+          setting: `Vibrant, TikTok-optimized environment with excellent lighting for mobile viewing. Setting should enhance the product and maintain visual interest throughout the ${blockDuration}-second block.`,
+          lighting: lightingSpecs[Math.min(Math.floor(Math.random() * 2), 1)],
+          audio: audioLines[audioLanguage === 'pt-BR' ? 0 : 1],
+          transition: i < blockCount ? transitions[Math.min(Math.floor(Math.random() * 2), 1)] : transitions[2]
         });
       }
 
-      // Generate hashtags
-      const hashtags = {
-        tiktok: ['#ViralVideo', '#AIContent', '#Trending', '#ForYou', '#Brasil', '#Viral', '#FYP'],
-        instagram: ['#Reels', '#Viral', '#AIGenerated', '#ContentCreator', '#Brasil', '#Trending', '#InstagramReels', '#ViralReels', '#AI', '#TechContent', '#Innovation', '#DigitalArt', '#CreativeContent', '#SocialMedia', '#Engagement'],
-        youtube: ['#Shorts', '#ViralContent', '#AIVideo', '#Brasil', '#Trending']
+      // Enhanced hashtags with country and trend optimization
+      const getOptimizedHashtags = (contentType: string, country: string, audioLanguage: string) => {
+        const baseHashtags = {
+          tiktok: ['#FYP', '#ForYou', '#Viral', '#TikTokShop'],
+          instagram: ['#Reels', '#Viral', '#InstagramReels', '#ViralReels', '#ContentCreator', '#TikTokShop'],
+          youtube: ['#Shorts', '#ViralContent', '#TikTokShop']
+        };
+
+        // Add country-specific hashtags
+        if (country === 'BR') {
+          baseHashtags.tiktok.push('#Brasil', '#TikTokBrasil', '#ViralBR');
+          baseHashtags.instagram.push('#Brasil', '#ReelsBrasil', '#BrasilTrending');
+          baseHashtags.youtube.push('#Brasil', '#BrazilShorts');
+        }
+
+        // Add content-type specific hashtags
+        if (contentType === 'trending') {
+          baseHashtags.tiktok.push('#Trending', '#TrendingNow', '#ViralTrend');
+          baseHashtags.instagram.push('#Trending', '#TrendingReels', '#ViralTrend');
+          baseHashtags.youtube.push('#Trending', '#TrendingShorts');
+        } else if (contentType === 'comedy') {
+          baseHashtags.tiktok.push('#Comedy', '#Funny', '#LOL', '#Humor');
+          baseHashtags.instagram.push('#Comedy', '#Funny', '#InstaComedy', '#Humor');
+          baseHashtags.youtube.push('#Comedy', '#Funny', '#FunnyShorts');
+        } else if (contentType === 'horror') {
+          baseHashtags.tiktok.push('#Horror', '#Scary', '#Suspense', '#Terror');
+          baseHashtags.instagram.push('#Horror', '#Scary', '#HorrorReels', '#Suspense');
+          baseHashtags.youtube.push('#Horror', '#Scary', '#HorrorShorts');
+        }
+
+        // Add character-specific hashtags
+        baseHashtags.tiktok.push(`#${character.name.replace(/\s+/g, '')}`);
+        baseHashtags.instagram.push(`#${character.name.replace(/\s+/g, '')}`, '#AIContent', '#DigitalCreator');
+        baseHashtags.youtube.push(`#${character.name.replace(/\s+/g, '')}`, '#AIContent');
+
+        return baseHashtags;
       };
 
-      // Create video title
-      const title = contentType === 'trending' 
-        ? `${character.name} e a Tendência Viral do Momento`
-        : contentType === 'comedy'
-        ? `${character.name}: Comédia que Vai Te Fazer Rir`
-        : contentType === 'horror'
-        ? `${character.name}: História de Arrepiar`
-        : `${character.name}: ${customTopic}`;
+      const hashtags = getOptimizedHashtags(contentType, country, audioLanguage);
+
+      // Enhanced title generation
+      const titleTemplates = {
+        trending: `${character.name} e a Tendência Viral que Está Bombando 🔥`,
+        comedy: `${character.name}: Comédia Viral que Vai Te Fazer Rir 😂`,
+        horror: `${character.name}: História de Arrepiar que Viralizou 😱`,
+        custom: `${character.name}: ${customTopic} 🎯`
+      };
+
+      const title = titleTemplates[contentType as keyof typeof titleTemplates] || titleTemplates.custom;
 
       // Convert blocks and hashtags to Json for Supabase
       const blocksAsJson = JSON.parse(JSON.stringify(blocks));

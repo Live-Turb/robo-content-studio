@@ -12,6 +12,8 @@ import { VideoGenerator } from './VideoGenerator';
 import { VideoScriptViewer } from './VideoScriptViewer';
 import { MetricsAnalyzer } from './MetricsAnalyzer';
 import { TemplateManager } from './TemplateManager';
+import { EditCharacterDialog } from './EditCharacterDialog';
+import { UserSettingsDialog } from './UserSettingsDialog';
 
 export default function Dashboard() {
   const { user, userProfile, signOut } = useAuth();
@@ -25,6 +27,9 @@ export default function Dashboard() {
   const [showVideoViewer, setShowVideoViewer] = useState(false);
   const [showMetricsAnalyzer, setShowMetricsAnalyzer] = useState(false);
   const [selectedVideoForMetrics, setSelectedVideoForMetrics] = useState<string | null>(null);
+  const [editingCharacter, setEditingCharacter] = useState<Character | null>(null);
+  const [showUserSettings, setShowUserSettings] = useState(false);
+  const [activeTab, setActiveTab] = useState('characters');
 
   useEffect(() => {
     if (user) {
@@ -137,6 +142,15 @@ export default function Dashboard() {
     }
   };
 
+  const handleEditCharacter = (character: Character) => {
+    setEditingCharacter(character);
+  };
+
+  const handleCharacterUpdated = () => {
+    fetchCharacters();
+    setEditingCharacter(null);
+  };
+
   const handleGenerateVideo = (character: Character) => {
     setSelectedCharacter(character);
     setShowVideoGenerator(true);
@@ -164,6 +178,10 @@ export default function Dashboard() {
     }
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
+
   const totalViews = videos.reduce((sum, video) => sum + video.total_views, 0);
   const canCreateMore = userProfile?.plan === 'free' ? characters.length < 3 : characters.length < 10;
 
@@ -176,35 +194,50 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-3">
-              <Sparkles className="h-8 w-8 text-purple-600" />
-              <h1 className="text-2xl font-bold text-gray-900">VideoViral AI</h1>
+              <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
+                <Sparkles className="h-5 w-5 text-white" />
+              </div>
+              <h1 className="text-xl font-bold text-gray-900">Video Creator AI</h1>
             </div>
 
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <User className="h-4 w-4" />
-                <span>{userProfile?.email}</span>
-                <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium">
-                  {userProfile?.plan?.toUpperCase()}
-                </span>
+              <div className="text-sm text-gray-600">
+                Plano: <span className="font-semibold text-purple-600">Free</span>
               </div>
               
-              <Button variant="outline" size="sm" onClick={signOut}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Sair
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowUserSettings(true)}
+                  className="p-2"
+                >
+                  <User className="h-4 w-4" />
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  <LogOut className="h-4 w-4 mr-1" />
+                  Sair
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
@@ -261,7 +294,7 @@ export default function Dashboard() {
         </div>
 
         {/* Main Content with Tabs */}
-        <Tabs defaultValue="characters" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="characters" className="flex items-center gap-2">
               <User className="h-4 w-4" />
@@ -293,7 +326,11 @@ export default function Dashboard() {
               )}
             </div>
 
-            {characters.length === 0 ? (
+            {loading ? (
+              <div className="flex items-center justify-center p-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+              </div>
+            ) : characters.length === 0 ? (
               <Card className="p-12 text-center">
                 <div className="flex flex-col items-center gap-4">
                   <User className="h-16 w-16 text-gray-400" />
@@ -313,8 +350,20 @@ export default function Dashboard() {
                   <CharacterCard
                     key={character.id}
                     character={character}
-                    onGenerateVideo={() => handleGenerateVideo(character)}
                     videoCount={videos.filter(v => v.character_id === character.id).length}
+                    totalViews={videos
+                      .filter(v => v.character_id === character.id)
+                      .reduce((sum, v) => sum + v.total_views, 0)
+                    }
+                    onGenerateVideo={(char) => {
+                      setSelectedCharacter(char);
+                      setShowVideoGenerator(true);
+                    }}
+                    onViewAnalytics={(char) => {
+                      setSelectedCharacter(char);
+                      setActiveTab('analytics');
+                    }}
+                    onEditCharacter={handleEditCharacter}
                   />
                 ))}
               </div>
@@ -419,7 +468,7 @@ export default function Dashboard() {
             <TemplateManager />
           </TabsContent>
         </Tabs>
-      </div>
+      </main>
 
       {/* Dialogs */}
       <CreateCharacterDialog
@@ -428,25 +477,27 @@ export default function Dashboard() {
         onCreateCharacter={handleCreateCharacter}
       />
 
+      <EditCharacterDialog
+        open={!!editingCharacter}
+        onOpenChange={(open) => !open && setEditingCharacter(null)}
+        character={editingCharacter}
+        onCharacterUpdated={handleCharacterUpdated}
+      />
+
+      <UserSettingsDialog
+        open={showUserSettings}
+        onOpenChange={setShowUserSettings}
+      />
+
       <VideoGenerator
         open={showVideoGenerator}
         onOpenChange={setShowVideoGenerator}
         character={selectedCharacter}
-        onVideoGenerated={fetchVideos}
+        onVideoGenerated={() => {
+          fetchVideos();
+          setShowVideoGenerator(false);
+        }}
       />
-
-      {selectedVideo && (
-        <VideoScriptViewer
-          video={selectedVideo}
-          open={showVideoViewer}
-          onOpenChange={setShowVideoViewer}
-          onEdit={(video) => {
-            // Future: implement video editing
-            console.log('Edit video:', video);
-          }}
-          onDelete={handleDeleteVideo}
-        />
-      )}
     </div>
   );
 }
