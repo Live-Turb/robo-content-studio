@@ -35,7 +35,7 @@ export default function Dashboard() {
       .order('created_at', { ascending: false });
 
     if (!error && data) {
-      setCharacters(data);
+      setCharacters(data as Character[]);
     }
     setLoading(false);
   };
@@ -51,22 +51,39 @@ export default function Dashboard() {
       .limit(10);
 
     if (!error && data) {
-      setVideos(data);
+      // Convert Supabase response to our Video type
+      const typedVideos = data.map(video => ({
+        ...video,
+        duration_seconds: video.duration_seconds as number,
+        content_type: video.content_type as 'trending' | 'horror' | 'comedy' | 'custom',
+        status: video.status as 'draft' | 'published' | 'archived',
+        blocks: Array.isArray(video.blocks) ? video.blocks : [],
+        hashtags: video.hashtags || { tiktok: [], instagram: [], youtube: [] }
+      }));
+      
+      setVideos(typedVideos as Video[]);
     }
   };
 
   const handleCreateCharacter = async (characterData: Partial<Character>) => {
+    if (!characterData.name || !characterData.personality || !characterData.visual_prompt) {
+      return;
+    }
+
     const { data, error } = await supabase
       .from('characters')
       .insert([{
-        ...characterData,
+        name: characterData.name,
+        personality: characterData.personality,
+        visual_prompt: characterData.visual_prompt,
+        avatar_url: characterData.avatar_url,
         user_id: user?.id
       }])
       .select()
       .single();
 
     if (!error && data) {
-      setCharacters([data, ...characters]);
+      setCharacters([data as Character, ...characters]);
       setShowCreateCharacter(false);
     }
   };

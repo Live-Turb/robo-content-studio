@@ -112,28 +112,40 @@ export function VideoGenerator({ open, onOpenChange, character, onVideoGenerated
       // Save to database
       const { data: video, error } = await supabase
         .from('videos')
-        .insert([{
+        .insert({
           character_id: character.id,
           title,
           duration_seconds: duration,
           blocks,
           hashtags,
           country_code: country,
-          content_type: contentType as any,
+          content_type: contentType as 'trending' | 'horror' | 'comedy' | 'custom',
           trending_topic: contentType === 'custom' ? customTopic : null,
-        }])
+        })
         .select()
         .single();
 
       if (error) throw error;
 
-      setGeneratedVideo(video);
-      onVideoGenerated();
+      if (video) {
+        // Convert to our Video type
+        const typedVideo: Video = {
+          ...video,
+          duration_seconds: video.duration_seconds as number,
+          content_type: video.content_type as 'trending' | 'horror' | 'comedy' | 'custom',
+          status: video.status as 'draft' | 'published' | 'archived',
+          blocks: Array.isArray(video.blocks) ? video.blocks : [],
+          hashtags: video.hashtags || { tiktok: [], instagram: [], youtube: [] }
+        };
+        
+        setGeneratedVideo(typedVideo);
+        onVideoGenerated();
 
-      toast({
-        title: "Roteiro viral gerado!",
-        description: `Seu vídeo de ${duration}s está pronto para viralizar.`,
-      });
+        toast({
+          title: "Roteiro viral gerado!",
+          description: `Seu vídeo de ${duration}s está pronto para viralizar.`,
+        });
+      }
 
     } catch (error) {
       console.error('Erro ao gerar vídeo:', error);

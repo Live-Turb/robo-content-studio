@@ -24,7 +24,7 @@ export interface Video {
   id: string;
   character_id: string;
   title: string;
-  duration_seconds: 8 | 16 | 24 | 32 | 40 | 48 | 56 | 60;
+  duration_seconds: number;
   blocks: VideoBlock[];
   hashtags: {
     tiktok: string[];

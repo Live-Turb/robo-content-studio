@@ -37,7 +37,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               .select('*')
               .eq('id', session.user.id)
               .single();
-            setUserProfile(profile);
+            
+            if (profile) {
+              // Ensure the plan is correctly typed
+              const typedProfile: AppUser = {
+                ...profile,
+                plan: (profile.plan as 'free' | 'pro' | 'enterprise')
+              };
+              setUserProfile(typedProfile);
+            }
           }, 0);
         } else {
           setUserProfile(null);
