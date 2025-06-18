@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Character, Video, VideoBlock } from '@/types/database';
@@ -17,6 +18,7 @@ import { UserSettingsDialog } from './UserSettingsDialog';
 
 export default function Dashboard() {
   const { user, userProfile, signOut } = useAuth();
+  const navigate = useNavigate();
   const [characters, setCharacters] = useState<Character[]>([]);
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
@@ -180,6 +182,7 @@ export default function Dashboard() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    navigate('/');
   };
 
   const totalViews = videos.reduce((sum, video) => sum + video.total_views, 0);
@@ -203,7 +206,7 @@ export default function Dashboard() {
               <img 
                 src="/viral-prompt-logo.png" 
                 alt="Viral Prompt" 
-                className="h-10 w-auto"
+                className="h-11 w-auto"
               />
             </div>
 

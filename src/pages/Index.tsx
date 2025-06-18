@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,8 +11,11 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Sparkles className="h-8 w-8 text-purple-600" />
-              <h1 className="text-2xl font-bold text-gray-900">VideoViral AI</h1>
+              <img 
+                src="/viral-prompt-logo.png" 
+                alt="Viral Prompt" 
+                className="h-11 w-auto"
+              />
             </div>
             
             <Link to="/auth">
