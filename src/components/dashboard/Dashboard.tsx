@@ -200,10 +200,11 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
-                <Sparkles className="h-5 w-5 text-white" />
-              </div>
-              <h1 className="text-xl font-bold text-gray-900">Video Creator AI</h1>
+              <img 
+                src="/viral-prompt-logo.png" 
+                alt="Viral Prompt" 
+                className="h-10 w-auto"
+              />
             </div>
 
             <div className="flex items-center gap-4">
