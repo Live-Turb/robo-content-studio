@@ -2,6 +2,9 @@
 export interface User {
   id: string;
   email: string;
+  first_name?: string;
+  last_name?: string;
+  whatsapp?: string;
   plan: 'free' | 'pro' | 'enterprise';
   daily_generations: number;
   created_at: string;

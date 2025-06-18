@@ -4,6 +4,8 @@ import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { Toaster } from '@/components/ui/toaster';
 import Index from '@/pages/Index';
 import AuthPage from '@/components/auth/AuthPage';
+import ResetPassword from '@/pages/ResetPassword';
+import NotFound from '@/pages/NotFound';
 import Dashboard from '@/components/dashboard/Dashboard';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -55,11 +57,13 @@ function AppRoutes() {
           <AuthPage />
         </PublicRoute>
       } />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/dashboard" element={
         <ProtectedRoute>
           <Dashboard />
         </ProtectedRoute>
       } />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
