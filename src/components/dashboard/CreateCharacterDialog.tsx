@@ -97,8 +97,6 @@ export function CreateCharacterDialog({ open, onOpenChange, onCreateCharacter }:
       return;
     }
 
-    setLoading(true);
-
     const visualPrompt = selectedVisual 
       ? VISUAL_PRESETS.find(p => p.id === selectedVisual)?.prompt || ''
       : customVisual;
@@ -106,6 +104,26 @@ export function CreateCharacterDialog({ open, onOpenChange, onCreateCharacter }:
     const personality = selectedPersonality 
       ? PERSONALITY_PRESETS.find(p => p.id === selectedPersonality)?.personality || ''
       : customPersonality;
+
+    if (name.length < 3 || name.length > 100) {
+      toast({
+        variant: 'destructive',
+        title: 'Nome do Personagem Inválido',
+        description: 'O nome deve ter entre 3 e 100 caracteres.',
+      });
+      return;
+    }
+
+    if (visualPrompt.length > 7000) {
+      toast({
+        variant: 'destructive',
+        title: 'Descrição Visual Muito Longa',
+        description: 'A descrição visual personalizada não pode ter mais de 7000 caracteres.',
+      });
+      return;
+    }
+    
+    setLoading(true);
 
     // Add language to personality
     const personalityWithLanguage = `${personality} | Audio Language: ${language}`;
@@ -128,11 +146,11 @@ export function CreateCharacterDialog({ open, onOpenChange, onCreateCharacter }:
       toast({
         variant: "destructive",
         title: "Erro ao criar personagem",
-        description: "Tente novamente em alguns momentos.",
+        description: (error as any)?.message || "Tente novamente em alguns momentos.",
       });
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
@@ -186,7 +204,11 @@ export function CreateCharacterDialog({ open, onOpenChange, onCreateCharacter }:
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Ex: Robô Max, Luna Tech, Professor Silva..."
                     className="text-lg"
+                    maxLength={100}
                   />
+                  <p className="text-sm text-right text-muted-foreground">
+                    {name.length} / 100
+                  </p>
                 </div>
 
                 <div>
@@ -264,7 +286,11 @@ export function CreateCharacterDialog({ open, onOpenChange, onCreateCharacter }:
                   }}
                   placeholder="Descreva detalhadamente como seu personagem deve parecer..."
                   rows={3}
+                  maxLength={7000}
                 />
+                <p className="text-sm text-right text-muted-foreground">
+                  {customVisual.length} / 7000
+                </p>
               </div>
 
               <div className="flex justify-between">

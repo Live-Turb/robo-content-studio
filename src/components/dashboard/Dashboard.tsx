@@ -498,6 +498,15 @@ export default function Dashboard() {
           setShowVideoGenerator(false);
         }}
       />
+
+      {selectedVideo && (
+        <VideoScriptViewer
+          open={showVideoViewer}
+          onOpenChange={setShowVideoViewer}
+          video={selectedVideo}
+          onDelete={handleDeleteVideo}
+        />
+      )}
     </div>
   );
 }

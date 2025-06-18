@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Character } from '@/types/database';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -38,10 +37,19 @@ export function EditCharacterDialog({ open, onOpenChange, character, onCharacter
     if (character) {
       setName(character.name);
       setVisualPrompt(character.visual_prompt);
-      setPersonality(character.personality);
-      // Try to extract language from personality or default to pt-BR
-      const langMatch = character.personality.match(/language:\s*([a-z-A-Z]+)/);
-      setLanguage(langMatch ? langMatch[1] : 'pt-BR');
+
+      // Extract personality and language
+      const personalityString = character.personality || '';
+      const langMatch = personalityString.match(/\| Audio Language:\s*([a-zA-Z-]+)/);
+      
+      if (langMatch && langMatch[1]) {
+        setLanguage(langMatch[1]);
+        // Remove the language part from the personality string for editing
+        setPersonality(personalityString.replace(langMatch[0], '').trim());
+      } else {
+        setPersonality(personalityString);
+        setLanguage('pt-BR'); // Default language
+      }
     }
   }, [character]);
 
@@ -55,11 +63,29 @@ export function EditCharacterDialog({ open, onOpenChange, character, onCharacter
       return;
     }
 
+    if (name.length < 3 || name.length > 100) {
+      toast({
+        variant: 'destructive',
+        title: 'Nome do Personagem Inválido',
+        description: 'O nome deve ter entre 3 e 100 caracteres.',
+      });
+      return;
+    }
+
+    if (visualPrompt.length > 7000) {
+      toast({
+        variant: 'destructive',
+        title: 'Descrição Visual Muito Longa',
+        description: 'A descrição visual não pode ter mais de 7000 caracteres.',
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Add language specification to personality
-      const updatedPersonality = `${personality} | Audio Language: ${language}`;
+      // Re-combine personality and language for storage
+      const updatedPersonality = `${personality.trim()} | Audio Language: ${language}`;
 
       const { error } = await supabase
         .from('characters')
@@ -67,7 +93,6 @@ export function EditCharacterDialog({ open, onOpenChange, character, onCharacter
           name,
           visual_prompt: visualPrompt,
           personality: updatedPersonality,
-          updated_at: new Date().toISOString()
         })
         .eq('id', character.id);
 
@@ -85,11 +110,11 @@ export function EditCharacterDialog({ open, onOpenChange, character, onCharacter
       toast({
         variant: "destructive",
         title: "Erro ao atualizar",
-        description: "Tente novamente em alguns momentos.",
+        description: (error as any)?.message || "Tente novamente em alguns momentos.",
       });
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   if (!character) return null;
@@ -115,7 +140,11 @@ export function EditCharacterDialog({ open, onOpenChange, character, onCharacter
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Nome do personagem"
+              maxLength={100}
             />
+            <p className="text-sm text-right text-muted-foreground mt-1">
+              {name.length} / 100
+            </p>
           </div>
 
           <div>
@@ -142,7 +171,11 @@ export function EditCharacterDialog({ open, onOpenChange, character, onCharacter
               onChange={(e) => setVisualPrompt(e.target.value)}
               placeholder="Descrição detalhada da aparência do personagem em inglês..."
               rows={4}
+              maxLength={7000}
             />
+            <p className="text-sm text-right text-muted-foreground mt-1">
+              {visualPrompt.length} / 7000
+            </p>
           </div>
 
           <div>
