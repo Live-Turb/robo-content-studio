@@ -18,7 +18,7 @@ export default function AuthPage() {
   const [resetEmail, setResetEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
-  const { signIn, signUp, resetPassword } = useAuth();
+  const { signIn, signUp, resetPassword, user, userProfile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -35,7 +35,13 @@ export default function AuthPage() {
         description: error,
       });
     } else {
-      navigate('/dashboard');
+      console.log('Login successful, user:', user);
+      console.log('User profile:', userProfile);
+      
+      // Aguardar um pouco para garantir que o estado foi atualizado
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1000);
     }
     
     setLoading(false);

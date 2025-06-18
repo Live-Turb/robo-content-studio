@@ -9,17 +9,12 @@ import NotFound from '@/pages/NotFound';
 import Dashboard from '@/components/dashboard/Dashboard';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, userProfile } = useAuth();
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-600"></div>
-      </div>
-    );
-  }
+  console.log('ProtectedRoute - user:', user?.email, 'userProfile:', userProfile);
 
   if (!user) {
+    console.log('No user found, redirecting to /auth');
     return <Navigate to="/auth" replace />;
   }
 
@@ -27,15 +22,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-600"></div>
-      </div>
-    );
-  }
+  const { user } = useAuth();
 
   if (user) {
     return <Navigate to="/dashboard" replace />;
@@ -45,6 +32,17 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AppRoutes() {
+  const { user, loading } = useAuth();
+
+  // Show loading during initial auth check
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-600"></div>
+      </div>
+    );
+  }
+
   return (
     <Routes>
       <Route path="/" element={

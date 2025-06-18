@@ -35,7 +35,11 @@ Deno.serve(async (req: Request) => {
     const token = url.searchParams.get('token');
     const source = url.searchParams.get('source') || 'cakto';
     
-    console.log('Webhook chamado com parâmetros:', { token, source, url: req.url });
+    // Verificar chave secreta do webhook
+    const expectedSecret = '23530c94-03e1-46f4-a734-4785e0e9d882';
+    const webhookSecret = req.headers.get('X-Webhook-Secret') || req.headers.get('x-webhook-secret');
+    
+    console.log('Webhook chamado com parâmetros:', { token, source, url: req.url, hasSecret: !!webhookSecret });
     // Verificar se é uma requisição POST
     if (req.method !== 'POST') {
       return new Response(
@@ -49,6 +53,18 @@ Deno.serve(async (req: Request) => {
 
     // Parse do body da requisição
     const payload: CaktoWebhookPayload = await req.json();
+    
+    // Validar chave secreta (opcional - dependendo de como a Cakto envia)
+    if (webhookSecret && webhookSecret !== expectedSecret) {
+      console.error('Chave secreta inválida:', { received: webhookSecret, expected: expectedSecret });
+      return new Response(
+        JSON.stringify({ error: 'Invalid webhook secret' }),
+        { 
+          status: 401, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
     
     console.log('Webhook recebido da Cakto:', payload);
 

@@ -43,9 +43,9 @@ export const TwitterEmbed: React.FC<TwitterEmbedProps> = ({ tweetId }) => {
     script.onload = () => {
       setScriptLoaded(true);
       // Processar todos os widgets na página
-      if (window.twttr && window.twttr.widgets) {
-        window.twttr.widgets.load();
-      }
+    if (window.twttr && window.twttr.widgets) {
+      window.twttr.widgets.load();
+    }
     };
     document.head.appendChild(script);
   }, []);

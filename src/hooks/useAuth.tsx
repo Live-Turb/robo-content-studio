@@ -27,17 +27,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         
         // Fetch user profile when authenticated
         if (session?.user) {
+          console.log('Fetching user profile for:', session.user.id);
           setTimeout(async () => {
-            const { data: profile } = await supabase
+            const { data: profile, error } = await supabase
               .from('users')
               .select('*')
               .eq('id', session.user.id)
               .single();
+            
+            console.log('Profile fetch result:', { profile, error });
             
             if (profile) {
               // Ensure the plan is correctly typed
@@ -45,6 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 ...profile,
                 plan: (profile.plan as 'free' | 'pro' | 'enterprise')
               };
+              console.log('Setting user profile:', typedProfile);
               setUserProfile(typedProfile);
             }
           }, 0);
