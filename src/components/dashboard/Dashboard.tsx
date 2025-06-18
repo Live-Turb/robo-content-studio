@@ -223,11 +223,7 @@ export default function Dashboard() {
                   size="sm"
                   className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
                   onClick={() => {
-                    // TODO: Implementar modal de upgrade ou redirecionar para página de planos
-                    toast({
-                      title: "Upgrade disponível!",
-                      description: "Em breve você poderá fazer upgrade para o plano ilimitado.",
-                    });
+                    window.open('https://pay.cakto.com.br/3enayhi_440790', '_blank');
                   }}
                 >
                   <Sparkles className="h-4 w-4 mr-1" />
@@ -342,10 +338,18 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-gray-900">Seus Personagens</h2>
               
-              {canCreateMore && (
+              {canCreateMore ? (
                 <Button onClick={() => setShowCreateCharacter(true)} className="bg-purple-600 hover:bg-purple-700">
                   <Plus className="h-4 w-4 mr-2" />
                   Novo Personagem
+                </Button>
+              ) : (
+                <Button 
+                  onClick={() => window.open('https://pay.cakto.com.br/3enayhi_440790', '_blank')}
+                  className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white"
+                >
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Upgrade para Criar Mais
                 </Button>
               )}
             </div>

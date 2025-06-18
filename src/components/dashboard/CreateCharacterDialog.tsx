@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { useSubscription } from '@/hooks/useSubscription';
+import { UpgradeModal } from '@/components/ui/upgrade-modal';
 import { Sparkles, User, Palette, Brain, Eye } from 'lucide-react';
 
 interface CreateCharacterDialogProps {
@@ -75,7 +77,9 @@ export function CreateCharacterDialog({ open, onOpenChange, onCreateCharacter }:
   const [customPersonality, setCustomPersonality] = useState('');
   const [language, setLanguage] = useState('pt-BR');
   const [loading, setLoading] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { toast } = useToast();
+  const { canCreateCharacter, getUpgradeModalData } = useSubscription();
 
   const resetForm = () => {
     setStep(1);
@@ -88,6 +92,12 @@ export function CreateCharacterDialog({ open, onOpenChange, onCreateCharacter }:
   };
 
   const handleCreate = async () => {
+    // Verificar se pode criar personagens
+    if (!canCreateCharacter) {
+      setShowUpgradeModal(true);
+      return;
+    }
+
     if (!name || (!selectedVisual && !customVisual) || (!selectedPersonality && !customPersonality)) {
       toast({
         variant: "destructive",
@@ -434,6 +444,15 @@ export function CreateCharacterDialog({ open, onOpenChange, onCreateCharacter }:
           )}
         </div>
       </DialogContent>
+      
+      {/* Modal de Upgrade */}
+      {getUpgradeModalData() && (
+        <UpgradeModal
+          isOpen={showUpgradeModal}
+          onClose={() => setShowUpgradeModal(false)}
+          {...getUpgradeModalData()!}
+        />
+      )}
     </Dialog>
   );
 }

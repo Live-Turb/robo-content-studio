@@ -10,6 +10,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useSubscription } from '@/hooks/useSubscription';
+import { UpgradeModal } from '@/components/ui/upgrade-modal';
 import { Sparkles, Video as VideoIcon, Clock, Globe, Zap, Copy, CheckCircle } from 'lucide-react';
 
 interface VideoGeneratorProps {
@@ -64,10 +66,18 @@ export function VideoGenerator({ open, onOpenChange, character, onVideoGenerated
   const [loading, setLoading] = useState(false);
   const [generatedVideo, setGeneratedVideo] = useState<Video | null>(null);
   const [copiedBlock, setCopiedBlock] = useState<number | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { toast } = useToast();
+  const { canCreatePrompt, incrementPromptUsage, getUpgradeModalData } = useSubscription();
 
   const generateVideo = async () => {
     if (!character) return;
+
+    // Verificar se pode criar prompts
+    if (!canCreatePrompt) {
+      setShowUpgradeModal(true);
+      return;
+    }
 
     setLoading(true);
 
@@ -235,6 +245,10 @@ export function VideoGenerator({ open, onOpenChange, character, onVideoGenerated
         };
         
         setGeneratedVideo(typedVideo);
+        
+        // Incrementar uso de prompt
+        incrementPromptUsage();
+        
         onVideoGenerated();
 
         toast({
@@ -690,6 +704,15 @@ export function VideoGenerator({ open, onOpenChange, character, onVideoGenerated
           )}
         </div>
       </DialogContent>
+      
+      {/* Modal de Upgrade */}
+      {getUpgradeModalData() && (
+        <UpgradeModal
+          isOpen={showUpgradeModal}
+          onClose={() => setShowUpgradeModal(false)}
+          {...getUpgradeModalData()!}
+        />
+      )}
     </Dialog>
   );
 }
