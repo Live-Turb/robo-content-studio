@@ -12,3 +12,21 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+# SEO Optimization for VEO3 - Criar Videos para TikTok
+Sitemap: https://viralprompt.ai/sitemap.xml
+
+# Allow all search engines to index our VEO3 content
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+# Prioritize key pages for VEO3 and prompt video content
+# Homepage: VEO3 - Criar Videos para TikTok
+# Auth: Sign up for VEO3 platform
+# Dashboard: VEO3 video creation tools
