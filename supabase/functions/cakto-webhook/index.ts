@@ -85,17 +85,91 @@ Deno.serve(async (req: Request) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Buscar usuário pelo email
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('email', payload.customer_email)
-      .single();
+    // Tentar múltiplas formas de identificar o usuário
+    let userData = null;
+    let userError = null;
 
-    if (userError) {
-      console.error('Erro ao buscar usuário:', userError);
+    // 1. Tentar buscar por session_id em payment_intents (mais seguro)
+    const sessionIdFromParams = url.searchParams.get('session_id');
+    
+    if (sessionIdFromParams) {
+      console.log('Tentando buscar usuário por session_id:', sessionIdFromParams);
+      const intentResult = await supabase
+        .from('payment_intents')
+        .select('user_id, email, users(*)')
+        .eq('session_id', sessionIdFromParams)
+        .eq('status', 'pending')
+        .single();
+        
+      if (intentResult.data) {
+        userData = intentResult.data.users;
+        
+        // Marcar intenção como completada
+        await supabase
+          .from('payment_intents')
+          .update({ status: 'completed', completed_at: new Date().toISOString() })
+          .eq('session_id', sessionIdFromParams);
+          
+        console.log('Usuário identificado via session_id:', userData?.email);
+      }
+    }
+
+    // 2. Tentar buscar por user_id se fornecido nos parâmetros da URL ou payload
+    const userIdFromParams = url.searchParams.get('user_id');
+    const userIdFromPayload = payload.customer_data?.document; // Caso a Cakto passe o user_id aqui
+    
+    if (!userData && userIdFromParams) {
+      console.log('Tentando buscar usuário por user_id:', userIdFromParams);
+      const result = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userIdFromParams)
+        .single();
+      userData = result.data;
+      userError = result.error;
+    }
+
+    // 3. Se não encontrou por user_id, tentar pelo email do pagamento
+    if (!userData && payload.customer_email) {
+      console.log('Tentando buscar usuário por email:', payload.customer_email);
+      const result = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', payload.customer_email)
+        .single();
+      userData = result.data;
+      userError = result.error;
+    }
+
+    // 4. Se ainda não encontrou, tentar por email nos custom fields (se a Cakto permitir)
+    if (!userData && payload.customer_data?.email) {
+      console.log('Tentando buscar usuário por customer_data.email:', payload.customer_data.email);
+      const result = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', payload.customer_data.email)
+        .single();
+      userData = result.data;
+      userError = result.error;
+    }
+
+    if (userError || !userData) {
+      console.error('Erro ao buscar usuário em todas as tentativas:', { 
+        userError, 
+        payload_email: payload.customer_email,
+        custom_email: payload.customer_data?.email,
+        user_id_param: userIdFromParams,
+        user_id_payload: userIdFromPayload
+      });
       return new Response(
-        JSON.stringify({ error: 'User not found' }),
+        JSON.stringify({ 
+          error: 'User not found',
+          debug_info: {
+            tried_user_id: userIdFromParams,
+            tried_email: payload.customer_email,
+            tried_custom_email: payload.customer_data?.email
+          }
+        }),
         { 
           status: 404, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -133,11 +207,19 @@ Deno.serve(async (req: Request) => {
     // Log da atualização para auditoria
     console.log(`Plano atualizado com sucesso:`, {
       userId: userData.id,
-      email: payload.customer_email,
+      userEmail: userData.email,
+      paymentEmail: payload.customer_email,
       oldPlan: userData.plan,
       newPlan: newPlan,
       paymentId: payload.payment_id,
-      amount: payload.amount
+      orderId: payload.order_id,
+      amount: payload.amount,
+      identificationMethod: userIdFromParams ? 'user_id' : 'email',
+      webhookParams: {
+        token,
+        source,
+        user_id: userIdFromParams
+      }
     });
 
     // Opcional: Registrar transação em uma tabela de pagamentos

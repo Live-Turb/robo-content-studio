@@ -222,8 +222,15 @@ export default function Dashboard() {
                 <Button
                   size="sm"
                   className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
-                  onClick={() => {
-                    window.open('https://pay.cakto.com.br/3enayhi_440790', '_blank');
+                  onClick={async () => {
+                    // Usar a versão personalizada da URL se disponível
+                    const baseUrl = 'https://pay.cakto.com.br/3enayhi_440790';
+                    const params = new URLSearchParams({
+                      email: user?.email || '',
+                      user_id: user?.id || '',
+                      return_url: `${window.location.origin}/dashboard?payment_success=true`
+                    });
+                    window.open(`${baseUrl}?${params.toString()}`, '_blank');
                   }}
                 >
                   <Sparkles className="h-4 w-4 mr-1" />
@@ -345,7 +352,15 @@ export default function Dashboard() {
                 </Button>
               ) : (
                 <Button 
-                  onClick={() => window.open('https://pay.cakto.com.br/3enayhi_440790', '_blank')}
+                  onClick={async () => {
+                    const baseUrl = 'https://pay.cakto.com.br/3enayhi_440790';
+                    const params = new URLSearchParams({
+                      email: user?.email || '',
+                      user_id: user?.id || '',
+                      return_url: `${window.location.origin}/dashboard?payment_success=true`
+                    });
+                    window.open(`${baseUrl}?${params.toString()}`, '_blank');
+                  }}
                   className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white"
                 >
                   <Sparkles className="h-4 w-4 mr-2" />

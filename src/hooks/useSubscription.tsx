@@ -167,9 +167,46 @@ export const useSubscription = () => {
     }));
   };
 
-  // URL de upgrade (link da Cakto)
-  const getUpgradeUrl = () => {
-    return 'https://pay.cakto.com.br/3enayhi_440790';
+  // URL de upgrade (link da Cakto personalizado por usuário)
+  const getUpgradeUrl = async () => {
+    const baseUrl = 'https://pay.cakto.com.br/3enayhi_440790';
+    
+    // Se há um usuário logado, criar intenção de pagamento e personalizar URL
+    if (user?.email) {
+      try {
+        // Gerar session_id único
+        const sessionId = `payment_${user.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
+        // Registrar intenção de pagamento
+        const { error } = await supabase
+          .from('payment_intents')
+          .insert({
+            user_id: user.id,
+            session_id: sessionId,
+            email: user.email,
+            amount: 29.90,
+            checkout_url: baseUrl
+          });
+
+        if (error) {
+          console.warn('Erro ao registrar intenção de pagamento:', error);
+        }
+
+        // Personalizar URL com todos os identificadores possíveis
+        const params = new URLSearchParams({
+          email: user.email,
+          user_id: user.id,
+          session_id: sessionId,
+          return_url: `${window.location.origin}/dashboard?payment_success=true`
+        });
+        
+        return `${baseUrl}?${params.toString()}`;
+      } catch (error) {
+        console.warn('Erro ao gerar URL personalizada:', error);
+      }
+    }
+    
+    return baseUrl;
   };
 
   // Dados para modal de upgrade

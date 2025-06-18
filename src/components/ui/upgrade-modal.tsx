@@ -18,7 +18,7 @@ interface UpgradeModalProps {
     daily: number;
     monthly: number;
   };
-  upgradeUrl: string;
+  upgradeUrl: string | (() => Promise<string>);
   benefits: string[];
 }
 
@@ -32,8 +32,10 @@ export const UpgradeModal = ({
   upgradeUrl,
   benefits,
 }: UpgradeModalProps) => {
-  const handleUpgrade = () => {
-    window.open(upgradeUrl, '_blank');
+  const handleUpgrade = async () => {
+    // Se upgradeUrl é uma função async, aguardar resultado
+    const finalUrl = typeof upgradeUrl === 'function' ? await upgradeUrl() : upgradeUrl;
+    window.open(finalUrl, '_blank');
     onClose();
   };
 
