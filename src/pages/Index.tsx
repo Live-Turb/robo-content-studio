@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sparkles, Video, TrendingUp, User, ArrowRight } from 'lucide-react';
+import { Sparkles, Video, TrendingUp, User, ArrowRight, Check, X, Crown } from 'lucide-react';
 
 const Index = () => {
   return (
@@ -90,6 +90,136 @@ const Index = () => {
               </CardDescription>
             </CardHeader>
           </Card>
+        </div>
+
+        {/* Pricing Section */}
+        <div className="mb-16">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Escolha Seu Plano
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Comece gratuitamente e faça upgrade quando precisar de mais recursos para escalar seu conteúdo viral
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Plano Gratuito */}
+            <Card className="border-2 hover:border-purple-200 transition-colors relative">
+              <CardHeader className="text-center pb-4">
+                <CardTitle className="text-2xl text-gray-900">Gratuito</CardTitle>
+                <div className="text-3xl font-bold text-purple-600 mb-2">R$ 0</div>
+                <CardDescription>Perfeito para começar</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Check className="h-5 w-5 text-green-500" />
+                    <span>3 personagens únicos</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Check className="h-5 w-5 text-green-500" />
+                    <span>5 roteiros por dia</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Check className="h-5 w-5 text-green-500" />
+                    <span>Templates básicos</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Check className="h-5 w-5 text-green-500" />
+                    <span>Hashtags otimizadas</span>
+                  </div>
+                  
+                  <div className="border-t pt-3 mt-4">
+                    <p className="text-sm text-gray-500 mb-3">Não incluso no plano gratuito:</p>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-3">
+                        <X className="h-4 w-4 text-red-400" />
+                        <span className="text-sm text-gray-400">Personagens ilimitados</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <X className="h-4 w-4 text-red-400" />
+                        <span className="text-sm text-gray-400">Roteiros ilimitados</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <X className="h-4 w-4 text-red-400" />
+                        <span className="text-sm text-gray-400">Templates premium</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <X className="h-4 w-4 text-red-400" />
+                        <span className="text-sm text-gray-400">Suporte prioritário</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <Link to="/auth" className="block">
+                  <Button className="w-full mt-6 bg-purple-600 hover:bg-purple-700">
+                    Começar Grátis
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Plano Ilimitado */}
+            <Card className="border-2 border-purple-300 hover:border-purple-400 transition-colors relative bg-gradient-to-br from-purple-50 to-blue-50">
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
+                  <Crown className="h-4 w-4" />
+                  Mais Popular
+                </div>
+              </div>
+              
+              <CardHeader className="text-center pb-4 pt-8">
+                <CardTitle className="text-2xl text-gray-900">Ilimitado</CardTitle>
+                <div className="text-3xl font-bold text-purple-600 mb-2">R$ 29,90</div>
+                <CardDescription>Para criadores sérios</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Check className="h-5 w-5 text-green-500" />
+                    <span className="font-semibold">Personagens ilimitados</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Check className="h-5 w-5 text-green-500" />
+                    <span className="font-semibold">Roteiros ilimitados</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Check className="h-5 w-5 text-green-500" />
+                    <span className="font-semibold">Templates premium</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Check className="h-5 w-5 text-green-500" />
+                    <span>Hashtags otimizadas</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Check className="h-5 w-5 text-green-500" />
+                    <span>Análise de performance</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Check className="h-5 w-5 text-green-500" />
+                    <span>Suporte prioritário</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Check className="h-5 w-5 text-green-500" />
+                    <span>Acesso antecipado a novos recursos</span>
+                  </div>
+                </div>
+                
+                <Link to="/auth" className="block">
+                  <Button className="w-full mt-6 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white">
+                    Começar Teste Grátis
+                    <Crown className="h-4 w-4 ml-2" />
+                  </Button>
+                </Link>
+                
+                <p className="text-xs text-center text-gray-500 mt-2">
+                  7 dias grátis, cancele a qualquer momento
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         {/* Stats Section */}

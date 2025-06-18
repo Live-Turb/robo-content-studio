@@ -15,6 +15,7 @@ import { MetricsAnalyzer } from './MetricsAnalyzer';
 import { TemplateManager } from './TemplateManager';
 import { EditCharacterDialog } from './EditCharacterDialog';
 import { UserSettingsDialog } from './UserSettingsDialog';
+import { toast } from '@/components/ui/use-toast';
 
 export default function Dashboard() {
   const { user, userProfile, signOut } = useAuth();
@@ -212,8 +213,27 @@ export default function Dashboard() {
 
             <div className="flex items-center gap-4">
               <div className="text-sm text-gray-600">
-                Plano: <span className="font-semibold text-purple-600">Free</span>
+                Plano: <span className="font-semibold text-purple-600">
+                  {userProfile?.plan === 'free' ? 'Gratuito' : 'Ilimitado'}
+                </span>
               </div>
+              
+              {userProfile?.plan === 'free' && (
+                <Button
+                  size="sm"
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+                  onClick={() => {
+                    // TODO: Implementar modal de upgrade ou redirecionar para página de planos
+                    toast({
+                      title: "Upgrade disponível!",
+                      description: "Em breve você poderá fazer upgrade para o plano ilimitado.",
+                    });
+                  }}
+                >
+                  <Sparkles className="h-4 w-4 mr-1" />
+                  Upgrade
+                </Button>
+              )}
               
               <div className="flex items-center gap-2">
                 <Button
