@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Copy, Eye, Share, Download, Play, Trash2, Edit } from 'lucide-react';
+import { Copy, Eye, Share, Download, Play, Trash2, Edit, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface VideoScriptViewerProps {
@@ -82,6 +82,35 @@ export function VideoScriptViewer({ video, open, onOpenChange, onEdit, onDelete 
     URL.revokeObjectURL(url);
   };
 
+  const formatCreatedDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMilliseconds = now.getTime() - date.getTime();
+    const diffInDays = Math.floor(diffInMilliseconds / (1000 * 60 * 60 * 24));
+    const diffInHours = Math.floor(diffInMilliseconds / (1000 * 60 * 60));
+    const diffInMinutes = Math.floor(diffInMilliseconds / (1000 * 60));
+
+    if (diffInDays === 0) {
+      if (diffInHours === 0) {
+        if (diffInMinutes === 0) {
+          return 'Agora mesmo';
+        }
+        return `Há ${diffInMinutes} min`;
+      }
+      return `Há ${diffInHours}h`;
+    } else if (diffInDays === 1) {
+      return 'Ontem';
+    } else if (diffInDays < 7) {
+      return `Há ${diffInDays} dias`;
+    } else {
+      return date.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
@@ -89,9 +118,15 @@ export function VideoScriptViewer({ video, open, onOpenChange, onEdit, onDelete 
           <div className="flex items-center justify-between">
             <div>
               <DialogTitle className="text-2xl">{video.title}</DialogTitle>
-              <DialogDescription className="mt-2">
-                {video.duration_seconds}s • {video.blocks.length} blocos • {video.content_type}
-                {video.trending_topic && ` • ${video.trending_topic}`}
+              <DialogDescription className="mt-2 space-y-1">
+                <div>
+                  {video.duration_seconds}s • {video.blocks.length} blocos • {video.content_type}
+                  {video.trending_topic && ` • ${video.trending_topic}`}
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Calendar className="h-4 w-4" />
+                  <span>Criado {formatCreatedDate(video.created_at)}</span>
+                </div>
               </DialogDescription>
             </div>
             

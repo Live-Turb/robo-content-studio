@@ -6,7 +6,7 @@ import { Character, Video, VideoBlock } from '@/types/database';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Video as VideoIcon, TrendingUp, Sparkles, User, LogOut, BarChart3, FileText, Eye } from 'lucide-react';
+import { Plus, Video as VideoIcon, TrendingUp, Sparkles, User, LogOut, BarChart3, FileText, Eye, Calendar } from 'lucide-react';
 import { CharacterCard } from './CharacterCard';
 import { CreateCharacterDialog } from './CreateCharacterDialog';
 import { VideoGenerator } from './VideoGenerator';
@@ -178,6 +178,35 @@ export default function Dashboard() {
     if (!error) {
       setVideos(videos.filter(v => v.id !== videoId));
       setShowVideoViewer(false);
+    }
+  };
+
+  const formatCreatedDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMilliseconds = now.getTime() - date.getTime();
+    const diffInDays = Math.floor(diffInMilliseconds / (1000 * 60 * 60 * 24));
+    const diffInHours = Math.floor(diffInMilliseconds / (1000 * 60 * 60));
+    const diffInMinutes = Math.floor(diffInMilliseconds / (1000 * 60));
+
+    if (diffInDays === 0) {
+      if (diffInHours === 0) {
+        if (diffInMinutes === 0) {
+          return 'Agora mesmo';
+        }
+        return `Há ${diffInMinutes} min`;
+      }
+      return `Há ${diffInHours}h`;
+    } else if (diffInDays === 1) {
+      return 'Ontem';
+    } else if (diffInDays < 7) {
+      return `Há ${diffInDays} dias`;
+    } else {
+      return date.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
     }
   };
 
@@ -450,6 +479,12 @@ export default function Dashboard() {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
+                        {/* Data de criação */}
+                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                          <Calendar className="h-4 w-4" />
+                          <span>{formatCreatedDate(video.created_at)}</span>
+                        </div>
+                        
                         <div className="flex items-center justify-between text-sm text-gray-600">
                           <span>{video.total_views} views</span>
                           <span className={`px-2 py-1 rounded-full text-xs ${
