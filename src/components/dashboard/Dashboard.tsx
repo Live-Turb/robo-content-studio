@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Character, Video, VideoBlock } from '@/types/database';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Video as VideoIcon, TrendingUp, Sparkles, User, LogOut, BarChart3, FileText, Eye, Calendar } from 'lucide-react';
 import { CharacterCard } from './CharacterCard';
@@ -530,15 +531,82 @@ export default function Dashboard() {
                 }}
               />
             ) : (
-              <Card className="p-12 text-center">
-                <div className="flex flex-col items-center gap-4">
-                  <BarChart3 className="h-16 w-16 text-gray-400" />
-                  <h3 className="text-xl font-semibold text-gray-600">Analisador de Performance</h3>
-                  <p className="text-gray-500 max-w-md">
-                    Selecione um vídeo da aba "Roteiros" para analisar sua performance com IA.
-                  </p>
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-gray-900">Analytics de Performance</h2>
+                  <p className="text-gray-600">Analise o desempenho dos seus vídeos com IA</p>
                 </div>
-              </Card>
+
+                {videos.length === 0 ? (
+                  <Card className="p-12 text-center">
+                    <div className="flex flex-col items-center gap-4">
+                      <BarChart3 className="h-16 w-16 text-gray-400" />
+                      <h3 className="text-xl font-semibold text-gray-600">Nenhum vídeo para analisar</h3>
+                      <p className="text-gray-500 max-w-md">
+                        Gere alguns roteiros primeiro para poder analisar sua performance.
+                      </p>
+                      <Button onClick={() => setActiveTab('videos')} className="mt-4">
+                        <VideoIcon className="h-4 w-4 mr-2" />
+                        Ver Roteiros
+                      </Button>
+                    </div>
+                  </Card>
+                ) : (
+                  <div className="space-y-4">
+                    <Card className="p-6 bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
+                      <div className="flex items-center gap-3">
+                        <BarChart3 className="h-8 w-8 text-purple-600" />
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">Como funciona o Analytics</h3>
+                          <p className="text-gray-600">Clique em "Analisar" em qualquer vídeo abaixo para fazer upload de screenshots e obter insights de IA sobre performance.</p>
+                        </div>
+                      </div>
+                    </Card>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {videos.map((video) => (
+                        <Card key={video.id} className="hover:shadow-lg transition-shadow">
+                          <CardHeader>
+                            <div className="flex items-center justify-between">
+                              <CardTitle className="text-lg line-clamp-2">{video.title}</CardTitle>
+                              <Badge variant={video.status === 'published' ? 'default' : 'secondary'}>
+                                {video.status}
+                              </Badge>
+                            </div>
+                            <CardDescription>
+                              {video.duration_seconds}s • {video.content_type} • {video.blocks.length} blocos
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-3">
+                              {/* Data de criação */}
+                              <div className="flex items-center gap-2 text-sm text-gray-500">
+                                <Calendar className="h-4 w-4" />
+                                <span>{formatCreatedDate(video.created_at)}</span>
+                              </div>
+                              
+                              <div className="flex items-center justify-between text-sm text-gray-600">
+                                <span>{video.total_views.toLocaleString()} views</span>
+                                <span className="text-green-600 font-medium">
+                                  📊 Pronto para análise
+                                </span>
+                              </div>
+                              
+                              <Button
+                                onClick={() => handleAnalyzeMetrics(video.id)}
+                                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                              >
+                                <BarChart3 className="h-4 w-4 mr-2" />
+                                Analisar Performance
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </TabsContent>
 
