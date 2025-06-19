@@ -3,7 +3,7 @@
 
 # Specific routes for API calls (if any)
 /api/*  /api/:splat  200
-
+ 
 # Functions and assets should not be rewritten
 /functions/*  /functions/:splat  200
 /_next/*  /_next/:splat  200 

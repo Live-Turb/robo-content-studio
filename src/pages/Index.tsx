@@ -166,44 +166,44 @@ const Index = () => {
             <TwitterEmbed tweetId="1925505764648538125" />
           </div>
 
-          {/* Success Stories Summary */}
-          <div className="bg-gradient-to-br from-white via-purple-50/50 to-indigo-50/50 rounded-3xl p-10 border border-purple-100 relative overflow-hidden shadow-2xl">
-            <div className="text-center relative">
-              <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-yellow-100 to-orange-100 border border-yellow-200 text-yellow-800 rounded-2xl text-sm font-bold mb-8 shadow-lg">
-                🏆 Comprovado pela Comunidade Global VEO3
-              </div>
+                      {/* Success Stories Summary */}
+            <div className="bg-gradient-to-br from-white via-purple-50/50 to-indigo-50/50 rounded-3xl p-10 border border-purple-100 relative overflow-hidden shadow-2xl">
+              <div className="text-center relative">
+                <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-yellow-100 to-orange-100 border border-yellow-200 text-yellow-800 rounded-2xl text-sm font-bold mb-8 shadow-lg">
+                  🏆 Comprovado pela Comunidade Global VEO3
+                </div>
+                
+                <h3 className="text-3xl md:text-4xl font-black text-gray-900 mb-8">
+                  Criadores VEO3 Dominando <span className="bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">TikTok e Redes Sociais</span>
+                </h3>
               
-              <h3 className="text-3xl md:text-4xl font-black text-gray-900 mb-8">
-                Criadores VEO3 Dominando <span className="bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">TikTok e Redes Sociais</span>
-              </h3>
-            
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="group text-center p-8 bg-gradient-to-br from-white to-purple-50 rounded-2xl border border-purple-100 hover:shadow-2xl hover:scale-105 transition-all duration-300">
-                  <div className="text-5xl font-black bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent mb-4">110K+</div>
-                  <div className="text-gray-900 font-bold text-lg mb-2">Seguidores Conquistados</div>
-                  <div className="text-gray-600 mb-3">Em apenas 5 dias com conteúdo ASMR</div>
-                  <div className="inline-flex items-center px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold">
-                    📱 TikTok Viral com VEO3
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <div className="group text-center p-8 bg-gradient-to-br from-white to-purple-50 rounded-2xl border border-purple-100 hover:shadow-2xl hover:scale-105 transition-all duration-300">
+                    <div className="text-5xl font-black bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent mb-4">110K+</div>
+                    <div className="text-gray-900 font-bold text-lg mb-2">Seguidores Conquistados</div>
+                    <div className="text-gray-600 mb-3">Em apenas 5 dias com conteúdo ASMR</div>
+                    <div className="inline-flex items-center px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold">
+                      📱 TikTok Viral com VEO3
+                    </div>
                   </div>
-                </div>
-                
-                <div className="group text-center p-8 bg-gradient-to-br from-white to-blue-50 rounded-2xl border border-blue-100 hover:shadow-2xl hover:scale-105 transition-all duration-300">
-                  <div className="text-5xl font-black bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent mb-4">$150K</div>
-                  <div className="text-gray-900 font-bold text-lg mb-2">Valor Equivalente</div>
-                  <div className="text-gray-600 mb-3">Em produção de anúncios Hollywood</div>
-                  <div className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold">
-                    🎬 Prompt Video Profissional
+                  
+                  <div className="group text-center p-8 bg-gradient-to-br from-white to-blue-50 rounded-2xl border border-blue-100 hover:shadow-2xl hover:scale-105 transition-all duration-300">
+                    <div className="text-5xl font-black bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent mb-4">$150K</div>
+                    <div className="text-gray-900 font-bold text-lg mb-2">Valor Equivalente</div>
+                    <div className="text-gray-600 mb-3">Em produção de anúncios Hollywood</div>
+                    <div className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold">
+                      🎬 Prompt Video Profissional
+                    </div>
                   </div>
-                </div>
-                
-                <div className="group text-center p-8 bg-gradient-to-br from-white to-green-50 rounded-2xl border border-green-100 hover:shadow-2xl hover:scale-105 transition-all duration-300">
-                  <div className="text-5xl font-black bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-4">5min</div>
-                  <div className="text-gray-900 font-bold text-lg mb-2">Tempo de Criação</div>
-                  <div className="text-gray-600 mb-3">Do prompt ao vídeo final</div>
-                  <div className="inline-flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
-                    ⚡ Tecnologia VEO3
+                  
+                  <div className="group text-center p-8 bg-gradient-to-br from-white to-green-50 rounded-2xl border border-green-100 hover:shadow-2xl hover:scale-105 transition-all duration-300">
+                    <div className="text-5xl font-black bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-4">5min</div>
+                    <div className="text-gray-900 font-bold text-lg mb-2">Tempo de Criação</div>
+                    <div className="text-gray-600 mb-3">Do prompt ao vídeo final</div>
+                    <div className="inline-flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
+                      ⚡ Tecnologia VEO3
+                    </div>
                   </div>
-                </div>
               </div>
             </div>
           </div>
@@ -275,24 +275,24 @@ const Index = () => {
                   <div className="flex items-start gap-4">
                     <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
                       <Check className="h-4 w-4 text-green-600" />
-                    </div>
+                      </div>
                     <div>
                       <p className="text-gray-900 font-semibold">Hashtags TikTok Automáticas</p>
                       <p className="text-gray-600 text-sm">Tags otimizadas para alcance</p>
-                    </div>
-                  </div>
+                      </div>
+                      </div>
                   
                   <div className="flex items-start gap-4">
                     <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
                       <Check className="h-4 w-4 text-green-600" />
-                    </div>
+                      </div>
                     <div>
                       <p className="text-gray-900 font-semibold">Suporte da Comunidade</p>
                       <p className="text-gray-600 text-sm">Acesso ao grupo Discord VEO3</p>
                     </div>
                   </div>
                 </div>
-
+                
                 <Link to="/auth">
                   <Button className="w-full bg-gradient-to-r from-gray-700 to-slate-700 hover:from-gray-800 hover:to-slate-800 text-white py-4 rounded-2xl text-lg font-bold transition-all duration-300 shadow-lg hover:shadow-xl group-hover:scale-105">
                     <Sparkles className="h-5 w-5 mr-2" />
@@ -309,11 +309,11 @@ const Index = () => {
               {/* Badge Recomendado */}
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
                 <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-3 rounded-full text-sm font-black flex items-center gap-2 shadow-lg">
-                  <Crown className="h-4 w-4" />
+                    <Crown className="h-4 w-4" />
                   RECOMENDADO
+                  </div>
                 </div>
-              </div>
-              
+                
               <div className="relative p-10 pt-12">
                 <div className="text-center mb-8">
                   <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-3xl mb-6 mx-auto group-hover:scale-110 transition-transform duration-300 shadow-xl">
@@ -380,7 +380,7 @@ const Index = () => {
                     </div>
                   </div>
                 </div>
-
+                
                 <Link to="/auth">
                   <Button className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white py-4 rounded-2xl text-lg font-bold transition-all duration-300 shadow-lg hover:shadow-xl group-hover:scale-105">
                     <Crown className="h-5 w-5 mr-2" />
@@ -390,8 +390,8 @@ const Index = () => {
                 </Link>
               </div>
             </Card>
-          </div>
-
+            </div>
+            
           {/* Garantia */}
           <div className="text-center mt-12">
             <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-100 to-emerald-100 border border-green-200 text-green-800 rounded-2xl text-sm font-semibold shadow-lg">
@@ -447,4 +447,4 @@ const Index = () => {
   );
 };
 
-export default Index; 
+export default Index;
