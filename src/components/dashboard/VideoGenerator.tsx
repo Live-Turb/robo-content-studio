@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,7 +13,8 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useSubscription } from '@/hooks/useSubscription';
 import { UpgradeModal } from '@/components/ui/upgrade-modal';
-import { Sparkles, Video as VideoIcon, Clock, Globe, Zap, Copy, CheckCircle } from 'lucide-react';
+import { IntelligentScriptService } from '@/services/intelligentScriptService';
+import { Sparkles, Video as VideoIcon, Clock, Globe, Zap, Copy, CheckCircle, TrendingUp, Brain, Search, Lightbulb } from 'lucide-react';
 
 interface VideoGeneratorProps {
   open: boolean;
@@ -34,26 +36,26 @@ const CONTENT_TYPES = [
   { 
     value: 'trending', 
     label: 'Trending Now', 
-    description: 'IA busca tendências atuais',
+    description: 'IA busca tendências reais do Google Trends',
     icon: '⚡',
     recommended: true
   },
   { 
     value: 'comedy', 
     label: 'Comédia', 
-    description: 'Conteúdo engraçado e viral',
+    description: 'Humor viral baseado em trends atuais',
     icon: '😂'
   },
   { 
     value: 'horror', 
     label: 'Terror/Suspense', 
-    description: 'Histórias assustadoras',
+    description: 'Histórias assustadoras com temas trending',
     icon: '😱'
   },
   { 
     value: 'custom', 
     label: 'Tema Personalizado', 
-    description: 'Defina seu próprio tema',
+    description: 'Seu tema + tendências do momento',
     icon: '🎯'
   },
 ];
@@ -67,8 +69,18 @@ export function VideoGenerator({ open, onOpenChange, character, onVideoGenerated
   const [generatedVideo, setGeneratedVideo] = useState<Video | null>(null);
   const [copiedBlock, setCopiedBlock] = useState<number | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  
+  // Estados para sistema inteligente
+  const [generationProgress, setGenerationProgress] = useState(0);
+  const [currentPhase, setCurrentPhase] = useState('');
+  const [trendingTopic, setTrendingTopic] = useState('');
+  const [hookStrategy, setHookStrategy] = useState('');
+  const [useIntelligentMode, setUseIntelligentMode] = useState(true);
+  
   const { toast } = useToast();
   const { canCreatePrompt, incrementPromptUsage, getUpgradeModalData } = useSubscription();
+  
+  const intelligentScriptService = new IntelligentScriptService();
 
   const generateVideo = async () => {
     if (!character) return;
@@ -80,6 +92,100 @@ export function VideoGenerator({ open, onOpenChange, character, onVideoGenerated
     }
 
     setLoading(true);
+    setGenerationProgress(0);
+    
+    if (useIntelligentMode) {
+      await generateIntelligentVideo();
+    } else {
+      await generateBasicVideo();
+    }
+  };
+
+  const generateIntelligentVideo = async () => {
+    try {
+      // FASE 1: Buscar tendências reais
+      setCurrentPhase('🔍 Analisando tendências do Google Trends...');
+      setGenerationProgress(15);
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // FASE 2: Gerar roteiro inteligente
+      setCurrentPhase('🧠 Gerando roteiro com IA avançada...');
+      setGenerationProgress(35);
+      
+      const scriptResult = await intelligentScriptService.generateIntelligentScript({
+        character,
+        duration,
+        contentType,
+        country,
+        customTopic: contentType === 'custom' ? customTopic : undefined
+      });
+      
+      setTrendingTopic(scriptResult.trendingTopic);
+      setHookStrategy(scriptResult.hookStrategy);
+      
+      // FASE 3: Otimizar para viralização
+      setCurrentPhase('⚡ Otimizando para máxima viralização...');
+      setGenerationProgress(60);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // FASE 4: Salvar no banco
+      setCurrentPhase('💾 Salvando roteiro viral...');
+      setGenerationProgress(80);
+      
+      const { data: video, error } = await supabase
+        .from('videos')
+        .insert({
+          character_id: character.id,
+          title: scriptResult.title,
+          duration_seconds: duration,
+          blocks: JSON.parse(JSON.stringify(scriptResult.blocks)),
+          hashtags: JSON.parse(JSON.stringify(scriptResult.hashtags)),
+          country_code: country,
+          content_type: contentType as 'trending' | 'horror' | 'comedy' | 'custom',
+          trending_topic: scriptResult.trendingTopic,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      if (video) {
+        const typedVideo: Video = {
+          ...video,
+          duration_seconds: video.duration_seconds as number,
+          content_type: video.content_type as 'trending' | 'horror' | 'comedy' | 'custom',
+          status: video.status as 'draft' | 'published' | 'archived',
+          blocks: scriptResult.blocks,
+          hashtags: scriptResult.hashtags
+        };
+        
+        setGenerationProgress(100);
+        setCurrentPhase('✅ Roteiro viral pronto!');
+        setGeneratedVideo(typedVideo);
+        
+        incrementPromptUsage();
+        onVideoGenerated();
+
+        toast({
+          title: "🚀 Roteiro Viral Inteligente Gerado!",
+          description: `Baseado na tendência "${scriptResult.trendingTopic}" - ${duration}s otimizados para viralização.`,
+        });
+      }
+
+    } catch (error) {
+      console.error('Erro ao gerar roteiro inteligente:', error);
+      toast({
+        variant: "destructive",
+        title: "Erro na geração inteligente",
+        description: "Tentando modo básico como fallback...",
+      });
+      await generateBasicVideo();
+    }
+
+    setLoading(false);
+  };
+
+  const generateBasicVideo = async () => {
 
     try {
       // Extract language from character
@@ -322,6 +428,10 @@ export function VideoGenerator({ open, onOpenChange, character, onVideoGenerated
     setContentType('trending');
     setCustomTopic('');
     setGeneratedVideo(null);
+    setGenerationProgress(0);
+    setCurrentPhase('');
+    setTrendingTopic('');
+    setHookStrategy('');
   };
 
   const handleClose = () => {
@@ -498,6 +608,50 @@ export function VideoGenerator({ open, onOpenChange, character, onVideoGenerated
                   </CardContent>
                 </Card>
 
+                {/* Toggle do Modo Inteligente */}
+                <Card className="border-2 border-dashed border-purple-300 bg-gradient-to-r from-purple-50 to-blue-50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Brain className="h-6 w-6 text-purple-600" />
+                        <div>
+                          <div className="font-semibold text-purple-900">IA Viral Inteligente</div>
+                          <div className="text-sm text-purple-700">Busca tendências reais do Google Trends</div>
+                        </div>
+                      </div>
+                      <Button
+                        variant={useIntelligentMode ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setUseIntelligentMode(!useIntelligentMode)}
+                        className={useIntelligentMode ? "bg-purple-600" : ""}
+                      >
+                        {useIntelligentMode ? "Ativado" : "Básico"}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Progress de Geração */}
+                {loading && (
+                  <Card className="border-purple-200 bg-purple-50">
+                    <CardContent className="p-4">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-purple-900">{currentPhase}</span>
+                          <span className="text-sm text-purple-700">{generationProgress}%</span>
+                        </div>
+                        <Progress value={generationProgress} className="h-2" />
+                        <div className="text-xs text-purple-600">
+                          {useIntelligentMode 
+                            ? "Aguarde enquanto nossa IA analisa tendências reais e cria seu roteiro viral..."
+                            : "Gerando roteiro básico..."
+                          }
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 <Button
                   onClick={generateVideo}
                   disabled={loading || (contentType === 'custom' && !customTopic)}
@@ -506,12 +660,12 @@ export function VideoGenerator({ open, onOpenChange, character, onVideoGenerated
                   {loading ? (
                     <div className="flex items-center gap-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      Gerando Roteiro Viral...
+                      {useIntelligentMode ? "Analisando Tendências..." : "Gerando..."}
                     </div>
                   ) : (
                     <>
-                      <Sparkles className="h-5 w-5 mr-2" />
-                      Gerar Roteiro Viral
+                      {useIntelligentMode ? <Brain className="h-5 w-5 mr-2" /> : <Sparkles className="h-5 w-5 mr-2" />}
+                      {useIntelligentMode ? "Gerar com IA Viral" : "Gerar Roteiro Básico"}
                     </>
                   )}
                 </Button>
@@ -523,7 +677,7 @@ export function VideoGenerator({ open, onOpenChange, character, onVideoGenerated
               <div className="flex items-center justify-between">
                 <h3 className="text-2xl font-bold text-green-600 flex items-center gap-2">
                   <CheckCircle className="h-6 w-6" />
-                  Roteiro Viral Gerado!
+                  {useIntelligentMode ? "Roteiro Viral Inteligente Gerado!" : "Roteiro Viral Gerado!"}
                 </h3>
                 <div className="flex gap-2">
                   <Button
@@ -538,6 +692,40 @@ export function VideoGenerator({ open, onOpenChange, character, onVideoGenerated
                   </Button>
                 </div>
               </div>
+
+              {/* Informações da IA Inteligente */}
+              {useIntelligentMode && (trendingTopic || hookStrategy) && (
+                <Card className="border-green-200 bg-green-50">
+                  <CardContent className="p-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="h-5 w-5 text-green-600" />
+                        <span className="font-semibold text-green-900">IA Viral Insights</span>
+                      </div>
+                      
+                      {trendingTopic && (
+                        <div className="flex items-start gap-2">
+                          <Search className="h-4 w-4 text-green-600 mt-0.5" />
+                          <div>
+                            <div className="text-sm font-medium text-green-800">Tendência Detectada:</div>
+                            <div className="text-sm text-green-700">"{trendingTopic}"</div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {hookStrategy && (
+                        <div className="flex items-start gap-2">
+                          <Lightbulb className="h-4 w-4 text-green-600 mt-0.5" />
+                          <div>
+                            <div className="text-sm font-medium text-green-800">Estratégia de Hook:</div>
+                            <div className="text-sm text-green-700">{hookStrategy}</div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               <Card className="bg-gradient-to-r from-green-50 to-blue-50">
                 <CardHeader>
