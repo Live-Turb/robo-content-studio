@@ -132,25 +132,25 @@ export class IntelligentScriptService {
   private generateHookStrategy(contentType: string, trendKeyword: string): string {
     const hookStrategies = {
       trending: [
-        `Personagem tropeça e derruba algo enquanto fala sobre ${trendKeyword}`,
-        `Personagem finge não saber sobre ${trendKeyword} mas depois revela conhecimento profundo`,
-        `Personagem começa fazendo algo totalmente diferente mas conecta com ${trendKeyword}`,
-        `Personagem reage de forma exagerada ao descobrir ${trendKeyword}`,
-        `Personagem faz uma previsão "errada" sobre ${trendKeyword} que depois se revela genial`
+        `Character stumbles and drops something while talking about ${trendKeyword}`,
+        `Character pretends not to know about ${trendKeyword} but then reveals deep knowledge`,
+        `Character starts doing something completely different but connects it with ${trendKeyword}`,
+        `Character reacts exaggeratedly to discovering ${trendKeyword}`,
+        `Character makes a "wrong" prediction about ${trendKeyword} that later proves genius`
       ],
       comedy: [
-        `Personagem tenta imitar ${trendKeyword} mas falha de forma hilária`,
-        `Personagem confunde ${trendKeyword} com algo completamente diferente`,
-        `Personagem faz uma piada ruim sobre ${trendKeyword} mas insiste que é engraçada`,
-        `Personagem tenta ser sério sobre ${trendKeyword} mas situações cômicas acontecem`,
-        `Personagem imita diferentes pessoas reagindo a ${trendKeyword}`
+        `Character tries to imitate ${trendKeyword} but fails hilariously`,
+        `Character confuses ${trendKeyword} with something completely different`,
+        `Character makes a bad joke about ${trendKeyword} but insists it's funny`,
+        `Character tries to be serious about ${trendKeyword} but comedic situations happen`,
+        `Character imitates different people reacting to ${trendKeyword}`
       ],
       horror: [
-        `Personagem encontra algo perturbador relacionado a ${trendKeyword}`,
-        `Personagem ouve ruídos estranhos enquanto pesquisa ${trendKeyword}`,
-        `Personagem descobre uma verdade sombria sobre ${trendKeyword}`,
-        `Personagem é perseguido por algo ligado a ${trendKeyword}`,
-        `Personagem tem pesadelos envolvendo ${trendKeyword}`
+        `Character finds something disturbing related to ${trendKeyword}`,
+        `Character hears strange noises while researching ${trendKeyword}`,
+        `Character discovers a dark truth about ${trendKeyword}`,
+        `Character is pursued by something linked to ${trendKeyword}`,
+        `Character has nightmares involving ${trendKeyword}`
       ]
     };
     
@@ -163,22 +163,22 @@ export class IntelligentScriptService {
     
     const narrativeTemplates = {
       trending: {
-        setup: `${character.name} descobre a tendência "${trend.keyword}" de forma inesperada`,
-        conflict: `Algo dá errado ou ${character.name} tem uma reação única à tendência`,
-        resolution: `${character.name} domina a tendência e mostra como aproveitá-la`,
-        cta: `Convida o público a participar da tendência`
+        setup: `${character.name} discovers the trend "${trend.keyword}" unexpectedly`,
+        conflict: `Something goes wrong or ${character.name} has a unique reaction to the trend`,
+        resolution: `${character.name} masters the trend and shows how to take advantage of it`,
+        cta: `Invites the audience to participate in the trend`
       },
       comedy: {
-        setup: `${character.name} tenta entender "${trend.keyword}" mas de forma hilária`,
-        conflict: `Situações cômicas se acumulam enquanto ${character.name} explora o tema`,
-        resolution: `${character.name} finalmente "entende" mas de forma ainda mais engraçada`,
-        cta: `Desafia o público a tentar fazer melhor`
+        setup: `${character.name} tries to understand "${trend.keyword}" but in a hilarious way`,
+        conflict: `Comic situations accumulate while ${character.name} explores the topic`,
+        resolution: `${character.name} finally "understands" but in an even funnier way`,
+        cta: `Challenges the audience to try to do better`
       },
       horror: {
-        setup: `${character.name} investiga algo perturbador sobre "${trend.keyword}"`,
-        conflict: `A situação se torna cada vez mais assustadora e misteriosa`,
-        resolution: `${character.name} revela uma verdade chocante ou escapa por pouco`,
-        cta: `Avisa o público sobre os perigos ou mistérios`
+        setup: `${character.name} investigates something disturbing about "${trend.keyword}"`,
+        conflict: `The situation becomes increasingly scary and mysterious`,
+        resolution: `${character.name} reveals a shocking truth or barely escapes`,
+        cta: `Warns the audience about dangers or mysteries`
       }
     };
     
@@ -233,24 +233,24 @@ export class IntelligentScriptService {
   private generateSceneDescription(blockNumber: number, narrative: any, trend: any, paceElement: string): string {
     const sceneTemplates = {
       'hook-setup': [
-        `${narrative.hookStrategy}. A cena começa de forma inesperada para capturar atenção imediata.`,
-        `Abertura impactante: personagem em situação inusitada relacionada a "${trend.keyword}".`,
-        `Hook visual forte: algo quebra o padrão normal e prende o viewer nos primeiros 2 segundos.`
+        `${narrative.hookStrategy}. The scene starts unexpectedly to capture immediate attention.`,
+        `Impactful opening: character in unusual situation related to "${trend.keyword}".`,
+        `Strong visual hook: something breaks the normal pattern and grabs the viewer in the first 2 seconds.`
       ],
       'conflict': [
-        `O conflito se intensifica. Personagem enfrenta desafio relacionado à tendência "${trend.keyword}".`,
-        `Momento de tensão: as coisas não saem como esperado com "${trend.keyword}".`,
-        `Complicação narrativa que mantém o público engajado e curioso.`
+        `The conflict intensifies. Character faces challenge related to the trend "${trend.keyword}".`,
+        `Tension moment: things don't go as expected with "${trend.keyword}".`,
+        `Narrative complication that keeps the audience engaged and curious.`
       ],
       'development': [
-        `Desenvolvimento da história. Personagem explora mais profundamente "${trend.keyword}".`,
-        `Revelações importantes sobre a tendência e como ela impacta o personagem.`,
-        `Construção emocional que conecta o público com a jornada do personagem.`
+        `Story development. Character explores "${trend.keyword}" more deeply.`,
+        `Important revelations about the trend and how it impacts the character.`,
+        `Emotional building that connects the audience with the character's journey.`
       ],
       'resolution-cta': [
-        `Resolução satisfatória. Personagem domina "${trend.keyword}" e convida participação.`,
-        `Conclusão impactante com call-to-action claro para o público.`,
-        `Final que incentiva engajamento e compartilhamento do conteúdo.`
+        `Satisfying resolution. Character masters "${trend.keyword}" and invites participation.`,
+        `Impactful conclusion with clear call-to-action for the audience.`,
+        `Ending that encourages engagement and content sharing.`
       ]
     };
     
@@ -262,44 +262,44 @@ export class IntelligentScriptService {
     // Detectar idioma do personagem
     const audioLanguage = character.personality.match(/Audio Language:\s*([a-z-A-Z]+)/)?.[1] || 'pt-BR';
     
-    // Traduzir prompt do personagem para o idioma correto
+    // SEMPRE usar prompt em inglês para VEO3
     const characterPrompt = this.translateCharacterPrompt(character.visual_prompt, audioLanguage);
     
-    const baseDirection = `${characterPrompt}. CONSISTÊNCIA VISUAL: Manter exatamente a mesma aparência em todos os blocos.`;
+    const baseDirection = `${characterPrompt}. VISUAL CONSISTENCY: Maintain exactly the same appearance across all blocks.`;
     
     const emotionalJourney = {
-      1: 'Expressão de surpresa e curiosidade inicial',
-      2: 'Demonstra envolvimento crescente e determinação', 
-      3: 'Mostra confiança e domínio do assunto',
-      4: 'Expressa entusiasmo e convida participação'
+      1: 'Expression of surprise and initial curiosity',
+      2: 'Shows growing involvement and determination', 
+      3: 'Shows confidence and mastery of the subject',
+      4: 'Expresses enthusiasm and invites participation'
     };
     
-    const emotion = emotionalJourney[blockNumber as keyof typeof emotionalJourney] || 'Mantém energia positiva e engajamento';
+    const emotion = emotionalJourney[blockNumber as keyof typeof emotionalJourney] || 'Maintains positive energy and engagement';
     
-    return `${baseDirection} ${emotion}. Personagem deve ser carismático e autêntico ao abordar "${trend.keyword}".`;
+    return `${baseDirection} ${emotion}. Character should be charismatic and authentic when addressing "${trend.keyword}".`;
   }
 
   private generateCameraWork(blockNumber: number, totalBlocks: number, paceElement: string): string {
     const cameraStyles = {
       'hook-setup': [
-        'Close-up dramático no rosto, 35mm, movimento de push-in rápido para criar impacto imediato',
-        'Plano médio com zoom súbito, handheld para energia, foco na reação inicial do personagem',
-        'Ângulo holandês para criar tensão, movimento de câmera dinâmico para quebrar expectativas'
+        'Dramatic close-up on face, 35mm, quick push-in movement to create immediate impact',
+        'Medium shot with sudden zoom, handheld for energy, focus on character\'s initial reaction',
+        'Dutch angle to create tension, dynamic camera movement to break expectations'
       ],
       'conflict': [
-        'Plano americano com movimento de tracking lateral, 50mm, seguindo a ação do personagem',
-        'Câmera na mão com cortes rápidos, múltiplos ângulos para intensificar o conflito',
-        'Plano sequência com zoom-out revelando o contexto completo da situação'
+        'American shot with lateral tracking movement, 50mm, following character\'s action',
+        'Handheld camera with quick cuts, multiple angles to intensify conflict',
+        'Sequence shot with zoom-out revealing complete situation context'
       ],
       'development': [
-        'Plano médio estável, 35mm, movimento suave de dolly para acompanhar o desenvolvimento',
-        'Intercala close-ups e planos gerais, ritmo mais calmo para absorção de informações',
-        'Câmera fixa com foco rack para destacar elementos importantes da tendência'
+        'Stable medium shot, 35mm, smooth dolly movement to accompany development',
+        'Alternates close-ups and wide shots, calmer rhythm for information absorption',
+        'Fixed camera with rack focus to highlight important trend elements'
       ],
       'resolution-cta': [
-        'Wide shot para mostrar resultado final, movimento de crane-up para impacto visual',
-        'Close-up final no personagem, 85mm, estabilizado para criar conexão com o público',
-        'Plano médio com movimento circular, destacando o call-to-action e engajamento'
+        'Wide shot to show final result, crane-up movement for visual impact',
+        'Final close-up on character, 85mm, stabilized to create audience connection',
+        'Medium shot with circular movement, highlighting call-to-action and engagement'
       ]
     };
     
@@ -308,15 +308,15 @@ export class IntelligentScriptService {
   }
 
   private generateSetting(blockNumber: number, narrative: any, trend: any): string {
-    return `Ambiente vibrante e otimizado para TikTok, com iluminação profissional que destaca o personagem. Cenário relacionado a "${trend.keyword}" quando relevante, mantendo alta qualidade visual em todos os ${narrative.blockCount} blocos.`;
+    return `Vibrant TikTok-optimized environment with professional lighting that highlights the character. Setting related to "${trend.keyword}" when relevant, maintaining high visual quality across all ${narrative.blockCount} blocks.`;
   }
 
   private generateLighting(blockNumber: number, totalBlocks: number, paceElement: string): string {
     const lightingMoods = {
-      'hook-setup': 'Iluminação dramática com contraste alto, luz principal forte para criar impacto visual imediato',
-      'conflict': 'Lighting dinâmico com mudanças sutis, sombras estratégicas para intensificar a tensão',
-      'development': 'Iluminação equilibrada e profissional, três pontos clássicos para clareza visual',
-      'resolution-cta': 'Luz brilhante e otimista, rim lighting para destacar o personagem e criar energia positiva'
+      'hook-setup': 'Dramatic lighting with high contrast, strong key light to create immediate visual impact',
+      'conflict': 'Dynamic lighting with subtle changes, strategic shadows to intensify tension',
+      'development': 'Balanced professional lighting, classic three-point setup for visual clarity',
+      'resolution-cta': 'Bright optimistic light, rim lighting to highlight character and create positive energy'
     };
     
     return lightingMoods[paceElement as keyof typeof lightingMoods] || lightingMoods['hook-setup'];
@@ -348,11 +348,11 @@ export class IntelligentScriptService {
 
   private generateTransition(blockNumber: number, totalBlocks: number): string {
     const transitions = [
-      'Corte rápido com efeito de zoom, sincronizado com beat da música',
-      'Transição de swipe com overlay de hashtag da tendência',
-      'Freeze frame com texto overlay, seguido de jump cut dinâmico',
-      'Efeito de glitch moderno com elementos visuais da tendência',
-      'Speed ramp dramático com mudança de ângulo de câmera'
+      'Quick cut with zoom effect, synchronized with music beat',
+      'Swipe transition with trend hashtag overlay',
+      'Freeze frame with text overlay, followed by dynamic jump cut',
+      'Modern glitch effect with trending visual elements',
+      'Dramatic speed ramp with camera angle change'
     ];
     
     return transitions[Math.floor(Math.random() * transitions.length)];
@@ -443,47 +443,79 @@ export class IntelligentScriptService {
 
   // Novo método: Traduzir prompt do personagem
   private translateCharacterPrompt(visualPrompt: string, targetLanguage: string): string {
-    if (targetLanguage === 'pt-BR') {
-      // Se for português, traduzir prompt em inglês para português
-      return visualPrompt
-        .replace(/A Brazilian female influencer/g, 'Uma influenciadora brasileira')
-        .replace(/years old/g, 'anos de idade')
-        .replace(/with morena \(brown\) skin tone/g, 'com tom de pele moreno')
-        .replace(/voluminous, well-defined curly hair/g, 'cabelo cacheado volumoso e bem definido')
-        .replace(/natural products/g, 'produtos naturais')
-        .replace(/Oval face with expressive brown eyes/g, 'Rosto oval com olhos castanhos expressivos')
-        .replace(/long curved eyelashes/g, 'cílios longos e curvados')
-        .replace(/proportional nose/g, 'nariz proporcional')
-        .replace(/full, well-defined lips/g, 'lábios cheios e bem definidos')
-        .replace(/well-applied but natural/g, 'bem aplicada mas natural')
-        .replace(/earthy eyeshadows/g, 'sombras terrosas')
-        .replace(/soft blush/g, 'blush suave')
-        .replace(/neutral or vibrant lipsticks/g, 'batons neutros ou vibrantes')
-        .replace(/complement her skin tone/g, 'complementam seu tom de pele')
-        .replace(/Height 1\.70m/g, 'Altura 1,70m')
-        .replace(/healthy, proportional body/g, 'corpo saudável e proporcional')
-        .replace(/soft curves/g, 'curvas suaves')
-        .replace(/neither too thin nor unrealistic/g, 'nem muito magra nem irrealista')
-        .replace(/confident posture/g, 'postura confiante')
-        .replace(/natural imperfections/g, 'imperfeições naturais')
-        .replace(/occasional acne or cellulite/g, 'acne ocasional ou celulite')
-        .replace(/comfortable yet stylish/g, 'confortável mas estiloso')
-        .replace(/high-waisted jeans/g, 'calças jeans cintura alta')
-        .replace(/light colorful blouses/g, 'blusas coloridas leves')
-        .replace(/discrete accessories/g, 'acessórios discretos')
-        .replace(/small earrings or simple necklaces/g, 'brincos pequenos ou colares simples')
-        .replace(/authenticity and relatability/g, 'autenticidade e identificação')
-        .replace(/Brazilian ethnic diversity/g, 'diversidade étnica brasileira')
-        .replace(/real and approachable/g, 'real e acessível')
-        .replace(/excessive glamour/g, 'glamour excessivo')
-        .replace(/natural beauty/g, 'beleza natural')
-        .replace(/traditional straight blonde standards/g, 'padrões tradicionais loiros e lisos')
-        .replace(/multicultural Brazilian beauty/g, 'beleza brasileira multicultural')
-        .replace(/realistic health representation/g, 'representação realista de saúde');
+    // SEMPRE retornar prompt em INGLÊS para VEO3, independente do idioma do áudio
+    // O áudio será tratado separadamente no generateAudioDirection
+    
+    // Se o prompt já estiver em inglês, manter
+    if (!this.hasPortugueseText(visualPrompt)) {
+      return visualPrompt;
     }
     
-    // Se for inglês ou outro idioma, manter original
-    return visualPrompt;
+    // Se estiver em português, traduzir para inglês
+    return visualPrompt
+      .replace(/Uma influenciadora brasileira/g, 'A Brazilian female influencer')
+      .replace(/anos de idade/g, 'years old')
+      .replace(/com tom de pele moreno/g, 'with brown skin tone')
+      .replace(/cabelo cacheado volumoso e bem definido/g, 'voluminous, well-defined curly hair')
+      .replace(/produtos naturais/g, 'natural products')
+      .replace(/Rosto oval com olhos castanhos expressivos/g, 'Oval face with expressive brown eyes')
+      .replace(/cílios longos e curvados/g, 'long curved eyelashes')
+      .replace(/nariz proporcional/g, 'proportional nose')
+      .replace(/lábios cheios e bem definidos/g, 'full, well-defined lips')
+      .replace(/bem aplicada mas natural/g, 'well-applied but natural')
+      .replace(/sombras terrosas/g, 'earthy eyeshadows')
+      .replace(/blush suave/g, 'soft blush')
+      .replace(/batons neutros ou vibrantes/g, 'neutral or vibrant lipsticks')
+      .replace(/complementam seu tom de pele/g, 'complement her skin tone')
+      .replace(/Altura 1,70m/g, 'Height 1.70m')
+      .replace(/corpo saudável e proporcional/g, 'healthy, proportional body')
+      .replace(/curvas suaves/g, 'soft curves')
+      .replace(/nem muito magra nem irrealista/g, 'neither too thin nor unrealistic')
+      .replace(/postura confiante/g, 'confident posture')
+      .replace(/imperfeições naturais/g, 'natural imperfections')
+      .replace(/acne ocasional ou celulite/g, 'occasional acne or cellulite')
+      .replace(/confortável mas estiloso/g, 'comfortable yet stylish')
+      .replace(/calças jeans cintura alta/g, 'high-waisted jeans')
+      .replace(/blusas coloridas leves/g, 'light colorful blouses')
+      .replace(/acessórios discretos/g, 'discrete accessories')
+      .replace(/brincos pequenos ou colares simples/g, 'small earrings or simple necklaces')
+      .replace(/autenticidade e identificação/g, 'authenticity and relatability')
+      .replace(/diversidade étnica brasileira/g, 'Brazilian ethnic diversity')
+      .replace(/real e acessível/g, 'real and approachable')
+      .replace(/glamour excessivo/g, 'excessive glamour')
+      .replace(/beleza natural/g, 'natural beauty')
+      .replace(/padrões tradicionais loiros e lisos/g, 'traditional straight blonde standards')
+      .replace(/beleza brasileira multicultural/g, 'multicultural Brazilian beauty')
+      .replace(/representação realista de saúde/g, 'realistic health representation')
+      .replace(/She has/g, 'She has')
+      .replace(/Her makeup is/g, 'Her makeup is')
+      .replace(/Her style is/g, 'Her style is')
+      .replace(/She displays/g, 'She displays')
+      .replace(/She embodies/g, 'She embodies')
+      .replace(/The character should appear/g, 'The character should appear')
+      .replace(/featuring/g, 'featuring')
+      .replace(/while showing/g, 'while showing')
+      .replace(/treated with/g, 'treated with')
+      .replace(/and/g, 'and')
+      .replace(/that/g, 'that')
+      .replace(/with a/g, 'with a')
+      .replace(/Focus on/g, 'Focus on')
+      .replace(/representing/g, 'representing')
+      .replace(/showcasing/g, 'showcasing')
+      .replace(/avoiding/g, 'avoiding')
+      .replace(/breaks away from/g, 'breaks away from');
+  }
+
+  // Método auxiliar para detectar texto em português
+  private hasPortugueseText(text: string): boolean {
+    // Detecta caracteres específicos do português e palavras comuns
+    const portuguesePatterns = [
+      /[ãõáéíóúâêîôûàèìòùç]/i, // Acentos portugueses
+      /\b(uma|com|anos|idade|cabelo|rosto|altura|corpo|estilo|beleza)\b/i, // Palavras comuns em português
+      /\b(brasileira|moreno|cacheado|definido|naturais|expressivos)\b/i // Palavras específicas
+    ];
+    
+    return portuguesePatterns.some(pattern => pattern.test(text));
   }
 
   // Novo método: Validar blocos gerados
