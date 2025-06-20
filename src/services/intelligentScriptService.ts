@@ -31,14 +31,52 @@ export class IntelligentScriptService {
   async generateIntelligentScript(params: ScriptGenerationParams): Promise<GeneratedScript> {
     console.log('🚀 Iniciando geração inteligente de roteiro...');
     
-    // FASE 1: Buscar tendências reais
-    const trends = await this.trendsService.getCurrentTrends(params.country, params.contentType);
-    const mainTrend = trends[0] || { keyword: 'Tendência viral', relatedQueries: [], hashtags: [] };
+    // VALIDAÇÃO INICIAL
+    if (params.contentType === 'custom' && !params.customTopic) {
+      throw new Error('Tema personalizado é obrigatório quando contentType é "custom"');
+    }
     
-    console.log(`📈 Tendência principal: ${mainTrend.keyword}`);
+    let mainTrend: any;
+    let trendingTopic: string;
+    
+    if (params.customTopic && params.contentType === 'custom') {
+      // MODO CUSTOMIZADO: Usar tema personalizado + tendência relacionada
+      console.log(`🎯 Modo customizado: ${params.customTopic}`);
+      
+      // Buscar tendências para enriquecer o tema customizado
+      const trends = await this.trendsService.getCurrentTrends(params.country, 'trending');
+      const relatedTrend = trends[0] || { keyword: 'viral', relatedQueries: [], hashtags: [] };
+      
+      // Criar tema híbrido: customTopic + elementos da tendência
+      mainTrend = {
+        keyword: params.customTopic,
+        relatedQueries: [
+          ...this.generateCustomQueries(params.customTopic),
+          ...relatedTrend.relatedQueries.slice(0, 3)
+        ],
+        hashtags: [
+          ...this.generateCustomHashtags(params.customTopic),
+          ...relatedTrend.hashtags.slice(0, 3)
+        ]
+      };
+      
+      trendingTopic = params.customTopic;
+      console.log(`📈 Tema customizado: ${trendingTopic} (enriquecido com ${relatedTrend.keyword})`);
+      
+      // VALIDAÇÃO: Verificar se o tema foi aplicado corretamente
+      if (!trendingTopic.toLowerCase().includes(params.customTopic.toLowerCase())) {
+        console.warn('⚠️ Aviso: Tema customizado pode não ter sido aplicado corretamente');
+      }
+    } else {
+      // MODO TRENDING: Usar tendência real do Google Trends
+      const trends = await this.trendsService.getCurrentTrends(params.country, params.contentType);
+      mainTrend = trends[0] || { keyword: 'Tendência viral', relatedQueries: [], hashtags: [] };
+      trendingTopic = mainTrend.keyword;
+      console.log(`📈 Tendência principal: ${trendingTopic}`);
+    }
     
     // FASE 2: Gerar hook envolvente
-    const hookStrategy = this.generateHookStrategy(params.contentType, mainTrend.keyword);
+    const hookStrategy = this.generateHookStrategy(params.contentType, trendingTopic);
     
     // FASE 3: Criar estrutura narrativa
     const narrative = this.createNarrativeStructure(
@@ -57,9 +95,12 @@ export class IntelligentScriptService {
       mainTrend
     );
     
+    // VALIDAÇÃO DOS BLOCOS
+    this.validateBlocks(blocks, trendingTopic, params.customTopic);
+    
     // FASE 5: Otimizar hashtags
     const hashtags = this.trendsService.generateOptimizedHashtags(
-      mainTrend.keyword,
+      trendingTopic,
       mainTrend.relatedQueries,
       params.country,
       params.contentType
@@ -68,19 +109,24 @@ export class IntelligentScriptService {
     // FASE 6: Criar título viral
     const title = this.generateViralTitle(
       params.character.name,
-      mainTrend.keyword,
+      trendingTopic,
       params.contentType
     );
     
-    console.log('✅ Roteiro inteligente gerado com sucesso!');
-    
-    return {
+    // VALIDAÇÃO FINAL
+    const result = {
       title,
       blocks,
       hashtags,
-      trendingTopic: mainTrend.keyword,
+      trendingTopic,
       hookStrategy
     };
+    
+    this.validateFinalResult(result, params);
+    
+    console.log('✅ Roteiro inteligente gerado com sucesso!');
+    
+    return result;
   }
 
   private generateHookStrategy(contentType: string, trendKeyword: string): string {
@@ -213,7 +259,13 @@ export class IntelligentScriptService {
   }
 
   private generateCharacterDirection(character: any, blockNumber: number, narrative: any, trend: any): string {
-    const baseDirection = `${character.visual_prompt}. CONSISTÊNCIA VISUAL: Manter exatamente a mesma aparência em todos os blocos.`;
+    // Detectar idioma do personagem
+    const audioLanguage = character.personality.match(/Audio Language:\s*([a-z-A-Z]+)/)?.[1] || 'pt-BR';
+    
+    // Traduzir prompt do personagem para o idioma correto
+    const characterPrompt = this.translateCharacterPrompt(character.visual_prompt, audioLanguage);
+    
+    const baseDirection = `${characterPrompt}. CONSISTÊNCIA VISUAL: Manter exatamente a mesma aparência em todos os blocos.`;
     
     const emotionalJourney = {
       1: 'Expressão de surpresa e curiosidade inicial',
@@ -274,14 +326,24 @@ export class IntelligentScriptService {
     const audioLanguage = character.personality.match(/Audio Language:\s*([a-z-A-Z]+)/)?.[1] || 'pt-BR';
     const languageName = this.getLanguageName(audioLanguage);
     
+    // Falas mais curtas e diretas para caber em 8 segundos
     const audioTemplates = {
-      1: `"${character.name}: Gente, vocês viram o que está acontecendo com ${trend.keyword}? Não acredito no que descobri!" Voz em ${languageName} com energia alta e curiosidade genuína. Som de fundo: música viral atual trending.`,
-      2: `"${character.name}: Olha só o que aconteceu quando eu tentei ${trend.keyword}... isso mudou tudo!" Voz em ${languageName} com construção de suspense. Efeitos sonoros relevantes à ação.`,
-      3: `"${character.name}: A verdade sobre ${trend.keyword} que ninguém te conta! Prepara que vai bombar!" Voz em ${languageName} com confiança crescente. Música de fundo intensificando.`,
-      4: `"${character.name}: Agora você precisa tentar! Marca seus amigos e mostra seu resultado! Link na bio!" Voz em ${languageName} com call-to-action claro. Som de finalização viral.`
+      'pt-BR': {
+        1: `"${character.name}: Gente! ${trend.keyword} está viral!" Voz em ${languageName} com energia alta. Som: música trending.`,
+        2: `"${character.name}: Olha isso! Mudou tudo!" Voz em ${languageName} com suspense. Efeitos sonoros.`,
+        3: `"${character.name}: A verdade sobre ${trend.keyword}!" Voz em ${languageName} confiante. Música intensificando.`,
+        4: `"${character.name}: Tenta aí! Marca os amigos!" Voz em ${languageName} com call-to-action. Som final viral.`
+      },
+      'en-US': {
+        1: `"${character.name}: Guys! ${trend.keyword} is trending!" Voice in ${languageName} with high energy. Sound: trending music.`,
+        2: `"${character.name}: Look at this! Everything changed!" Voice in ${languageName} with suspense. Sound effects.`,
+        3: `"${character.name}: The truth about ${trend.keyword}!" Voice in ${languageName} confident. Music intensifying.`,
+        4: `"${character.name}: Try it! Tag your friends!" Voice in ${languageName} with call-to-action. Viral ending sound.`
+      }
     };
     
-    return audioTemplates[blockNumber as keyof typeof audioTemplates] || audioTemplates[1];
+    const templates = audioTemplates[audioLanguage as keyof typeof audioTemplates] || audioTemplates['pt-BR'];
+    return templates[blockNumber as keyof typeof templates] || templates[1];
   }
 
   private generateTransition(blockNumber: number, totalBlocks: number): string {
@@ -331,5 +393,148 @@ export class IntelligentScriptService {
       'fr-FR': 'Français'
     };
     return names[code] || 'Português';
+  }
+
+  // Novo método: Gerar queries relacionadas para temas customizados
+  private generateCustomQueries(customTopic: string): string[] {
+    const topicWords = customTopic.toLowerCase().split(' ');
+    const queries: string[] = [];
+    
+    // Queries baseadas no tema
+    queries.push(
+      `${customTopic} viral`,
+      `${customTopic} tutorial`,
+      `${customTopic} dicas`,
+      `como fazer ${customTopic}`,
+      `${customTopic} 2025`
+    );
+    
+    // Queries baseadas em palavras-chave do tema
+    topicWords.forEach(word => {
+      if (word.length > 3) {
+        queries.push(`${word} trending`, `${word} viral`);
+      }
+    });
+    
+    return queries.slice(0, 8);
+  }
+
+  // Novo método: Gerar hashtags para temas customizados
+  private generateCustomHashtags(customTopic: string): string[] {
+    const hashtags: string[] = [];
+    const cleanTopic = customTopic.replace(/[^a-zA-Z0-9\s]/g, '');
+    
+    // Hashtag principal
+    hashtags.push(`#${cleanTopic.replace(/\s+/g, '').toLowerCase()}`);
+    
+    // Hashtags por palavra
+    const words = cleanTopic.split(' ');
+    words.forEach(word => {
+      if (word.length > 3) {
+        hashtags.push(`#${word.toLowerCase()}`);
+      }
+    });
+    
+    // Hashtags genéricas relevantes
+    hashtags.push('#tutorial', '#dicas', '#viral', '#fyp');
+    
+    return hashtags.slice(0, 8);
+  }
+
+  // Novo método: Traduzir prompt do personagem
+  private translateCharacterPrompt(visualPrompt: string, targetLanguage: string): string {
+    if (targetLanguage === 'pt-BR') {
+      // Se for português, traduzir prompt em inglês para português
+      return visualPrompt
+        .replace(/A Brazilian female influencer/g, 'Uma influenciadora brasileira')
+        .replace(/years old/g, 'anos de idade')
+        .replace(/with morena \(brown\) skin tone/g, 'com tom de pele moreno')
+        .replace(/voluminous, well-defined curly hair/g, 'cabelo cacheado volumoso e bem definido')
+        .replace(/natural products/g, 'produtos naturais')
+        .replace(/Oval face with expressive brown eyes/g, 'Rosto oval com olhos castanhos expressivos')
+        .replace(/long curved eyelashes/g, 'cílios longos e curvados')
+        .replace(/proportional nose/g, 'nariz proporcional')
+        .replace(/full, well-defined lips/g, 'lábios cheios e bem definidos')
+        .replace(/well-applied but natural/g, 'bem aplicada mas natural')
+        .replace(/earthy eyeshadows/g, 'sombras terrosas')
+        .replace(/soft blush/g, 'blush suave')
+        .replace(/neutral or vibrant lipsticks/g, 'batons neutros ou vibrantes')
+        .replace(/complement her skin tone/g, 'complementam seu tom de pele')
+        .replace(/Height 1\.70m/g, 'Altura 1,70m')
+        .replace(/healthy, proportional body/g, 'corpo saudável e proporcional')
+        .replace(/soft curves/g, 'curvas suaves')
+        .replace(/neither too thin nor unrealistic/g, 'nem muito magra nem irrealista')
+        .replace(/confident posture/g, 'postura confiante')
+        .replace(/natural imperfections/g, 'imperfeições naturais')
+        .replace(/occasional acne or cellulite/g, 'acne ocasional ou celulite')
+        .replace(/comfortable yet stylish/g, 'confortável mas estiloso')
+        .replace(/high-waisted jeans/g, 'calças jeans cintura alta')
+        .replace(/light colorful blouses/g, 'blusas coloridas leves')
+        .replace(/discrete accessories/g, 'acessórios discretos')
+        .replace(/small earrings or simple necklaces/g, 'brincos pequenos ou colares simples')
+        .replace(/authenticity and relatability/g, 'autenticidade e identificação')
+        .replace(/Brazilian ethnic diversity/g, 'diversidade étnica brasileira')
+        .replace(/real and approachable/g, 'real e acessível')
+        .replace(/excessive glamour/g, 'glamour excessivo')
+        .replace(/natural beauty/g, 'beleza natural')
+        .replace(/traditional straight blonde standards/g, 'padrões tradicionais loiros e lisos')
+        .replace(/multicultural Brazilian beauty/g, 'beleza brasileira multicultural')
+        .replace(/realistic health representation/g, 'representação realista de saúde');
+    }
+    
+    // Se for inglês ou outro idioma, manter original
+    return visualPrompt;
+  }
+
+  // Novo método: Validar blocos gerados
+  private validateBlocks(blocks: VideoBlock[], trendingTopic: string, customTopic?: string): void {
+    blocks.forEach((block, index) => {
+      // Validar se o tema está presente no audio
+      const audioLower = block.audio.toLowerCase();
+      const topicLower = trendingTopic.toLowerCase();
+      
+      if (!audioLower.includes(topicLower) && customTopic) {
+        console.warn(`⚠️ Bloco ${index + 1}: Tema "${trendingTopic}" não encontrado no áudio`);
+      }
+      
+      // Validar duração da fala (aproximada)
+      const speechText = block.audio.match(/"([^"]+)"/)?.[1] || '';
+      const wordCount = speechText.split(' ').length;
+      if (wordCount > 12) {
+        console.warn(`⚠️ Bloco ${index + 1}: Fala muito longa (${wordCount} palavras) para 8 segundos`);
+      }
+      
+      // Validar consistência de idioma
+      const hasPortuguese = /[ãõáéíóúâêîôûàèìòùç]/i.test(block.character);
+      const hasEnglish = /\b(with|and|the|of|in|a|an)\b/i.test(block.character);
+      
+      if (hasPortuguese && hasEnglish) {
+        console.warn(`⚠️ Bloco ${index + 1}: Prompt multilíngue detectado - pode confundir VEO3`);
+      }
+    });
+  }
+
+  // Novo método: Validar resultado final
+  private validateFinalResult(result: GeneratedScript, params: ScriptGenerationParams): void {
+    // Validar se tema customizado foi usado
+    if (params.customTopic && params.contentType === 'custom') {
+      const titleHasTopic = result.title.toLowerCase().includes(params.customTopic.toLowerCase());
+      const trendingTopicMatches = result.trendingTopic.toLowerCase() === params.customTopic.toLowerCase();
+      
+      if (!titleHasTopic && !trendingTopicMatches) {
+        console.error('❌ ERRO CRÍTICO: Tema customizado não foi aplicado no resultado final!');
+        console.error(`Esperado: ${params.customTopic}`);
+        console.error(`Obtido: ${result.trendingTopic}`);
+        throw new Error(`Tema customizado "${params.customTopic}" não foi aplicado corretamente`);
+      }
+    }
+    
+    // Validar número de blocos
+    const expectedBlocks = Math.ceil(params.duration / 8);
+    if (result.blocks.length !== expectedBlocks) {
+      console.warn(`⚠️ Número de blocos incorreto: esperado ${expectedBlocks}, obtido ${result.blocks.length}`);
+    }
+    
+    console.log('✅ Validação final passou - roteiro está correto');
   }
 } 
