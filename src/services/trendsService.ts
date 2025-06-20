@@ -26,10 +26,11 @@ const countryMappings: CountryMapping = {
 };
 
 const categoryMappings = {
-  'trending': 0, // All categories
-  'comedy': 20, // Humor
-  'horror': 18, // TV & Film
-  'custom': 0
+  'trending': 'all',
+  'comedy': 'entertainment',
+  'horror': 'entertainment',
+  'sports': 'sports',
+  'custom': 'all'
 };
 
 export class TrendsService {
@@ -46,141 +47,120 @@ export class TrendsService {
   async getCurrentTrends(country: string, contentType: string): Promise<TrendData[]> {
     try {
       const geoCode = countryMappings[country] || 'BR';
-      const category = categoryMappings[contentType as keyof typeof categoryMappings] || 0;
+      const category = categoryMappings[contentType as keyof typeof categoryMappings] || 'all';
       
       console.log(`🔍 Buscando tendências para ${country} (${geoCode}) - Categoria: ${contentType}`);
       
-      // Busca tendências diárias (real-time)
-      const dailyTrends = await this.getDailyTrends(geoCode);
+      // Busca tendências via Edge Function
+      const trendsData = await this.fetchTrendsFromEdgeFunction(geoCode, category);
       
-      // Busca palavras-chave relacionadas se tivermos tendências
-      if (dailyTrends.length > 0) {
-        const enrichedTrends = await Promise.all(
-          dailyTrends.slice(0, 3).map(async (trend) => {
-            const relatedData = await this.getRelatedQueries(trend.keyword, geoCode, category);
-            return {
-              ...trend,
-              relatedQueries: relatedData.queries,
-              hashtags: relatedData.hashtags
-            };
-          })
-        );
-        
-        return enrichedTrends;
+      if (trendsData && trendsData.length > 0) {
+        console.log(`✅ Encontradas ${trendsData.length} tendências via Edge Function`);
+        return trendsData;
       }
       
       // Fallback: busca por categoria específica
+      console.log('⚠️ Usando fallback trends');
       return await this.getFallbackTrends(geoCode, category, contentType);
       
     } catch (error) {
       console.error('❌ Erro ao buscar tendências:', error);
-      return await this.getFallbackTrends('BR', 0, contentType);
+      return await this.getFallbackTrends('BR', 'all', contentType);
     }
   }
 
-  // Busca tendências diárias via Supabase Edge Function
-  private async getDailyTrends(geoCode: string): Promise<TrendData[]> {
+  // Busca tendências via Edge Function existente
+  private async fetchTrendsFromEdgeFunction(geoCode: string, category: string): Promise<TrendData[]> {
     try {
+      console.log('📡 Chamando Edge Function google-trends...');
+      
       const { data, error } = await supabase.functions.invoke('google-trends', {
         body: {
-          action: 'dailyTrends',
-          geo: geoCode,
-          hl: geoCode === 'BR' ? 'pt-BR' : 'en-US'
+          category: category,
+          country: geoCode,
+          period: 'now 1-d',
+          limit: 10
         }
       });
       
-      if (error) throw error;
-      
-      const trends: TrendData[] = [];
-      
-      if (data?.trends) {
-        // Pega os top 5 trends
-        for (let i = 0; i < Math.min(5, data.trends.length); i++) {
-          const trend = data.trends[i];
-          trends.push({
-            keyword: trend.keyword || 'Tendência viral',
-            value: trend.value || 100,
-            relatedQueries: [],
-            hashtags: []
-          });
-        }
+      if (error) {
+        console.error('❌ Erro na Edge Function:', error);
+        throw error;
       }
       
-      console.log(`✅ Encontradas ${trends.length} tendências diárias via Supabase`);
+      if (!data?.success || !data?.data?.trends) {
+        console.error('❌ Resposta inválida da Edge Function:', data);
+        throw new Error('Resposta inválida da Edge Function');
+      }
+      
+      // Converter formato da Edge Function para nosso formato
+      const trends: TrendData[] = data.data.trends.map((trend: any) => ({
+        keyword: trend.title || 'Tendência viral',
+        value: this.parseTrafficValue(trend.formattedTraffic || '100'),
+        relatedQueries: trend.relatedQueries || [],
+        hashtags: this.generateHashtags(trend.title, trend.relatedQueries || [])
+      }));
+      
+      console.log(`✅ ${trends.length} tendências processadas da Edge Function`);
       return trends;
       
     } catch (error) {
-      console.error('❌ Erro ao buscar tendências diárias via Supabase:', error);
-      return [];
+      console.error('❌ Erro ao buscar tendências via Edge Function:', error);
+      throw error;
     }
   }
 
-  // Busca queries relacionadas via Supabase Edge Function
-  private async getRelatedQueries(keyword: string, geoCode: string, category: number): Promise<{queries: string[], hashtags: string[]}> {
-    try {
-      const { data, error } = await supabase.functions.invoke('google-trends', {
-        body: {
-          action: 'relatedQueries',
-          keyword: keyword,
-          geo: geoCode,
-          category: category,
-          hl: geoCode === 'BR' ? 'pt-BR' : 'en-US'
-        }
-      });
-      
-      if (error) throw error;
-      
-      const queries: string[] = [];
-      const hashtags: string[] = [];
-      
-      // Extrai queries relacionadas
-      if (data?.queries) {
-        queries.push(...data.queries.slice(0, 5));
+  // Converte texto de tráfego em número
+  private parseTrafficValue(formattedTraffic: string): number {
+    const match = formattedTraffic.match(/(\d+)([KM]?)/);
+    if (!match) return 100;
+    
+    const num = parseInt(match[1]);
+    const multiplier = match[2];
+    
+    if (multiplier === 'M') return num * 1000000;
+    if (multiplier === 'K') return num * 1000;
+    return num;
+  }
+
+  // Gera hashtags baseadas no título e queries relacionadas
+  private generateHashtags(title: string, relatedQueries: string[]): string[] {
+    const hashtags: string[] = [];
+    
+    // Hashtag principal baseada no título
+    const mainHashtag = `#${title.replace(/\s+/g, '').toLowerCase()}`;
+    hashtags.push(mainHashtag);
+    
+    // Hashtags das queries relacionadas (primeiras 3)
+    relatedQueries.slice(0, 3).forEach(query => {
+      const hashtag = `#${query.replace(/\s+/g, '').toLowerCase()}`;
+      if (hashtag.length <= 20 && !hashtags.includes(hashtag)) {
+        hashtags.push(hashtag);
       }
-      
-      // Gera hashtags baseadas no keyword e queries relacionadas
-      hashtags.push(
-        `#${keyword.replace(/\s+/g, '').toLowerCase()}`,
-        `#viral`,
-        `#trending`,
-        `#${geoCode.toLowerCase()}`
-      );
-      
-      // Adiciona hashtags das queries relacionadas
-      queries.slice(0, 3).forEach(query => {
-        const hashtag = `#${query.replace(/\s+/g, '').toLowerCase()}`;
-        if (hashtag.length <= 20 && !hashtags.includes(hashtag)) {
-          hashtags.push(hashtag);
-        }
-      });
-      
-      return { queries: queries.slice(0, 5), hashtags: hashtags.slice(0, 8) };
-      
-    } catch (error) {
-      console.error('❌ Erro ao buscar queries relacionadas via Supabase:', error);
-      return { 
-        queries: ['tendência viral', 'assunto do momento'], 
-        hashtags: [`#${keyword.replace(/\s+/g, '').toLowerCase()}`, '#viral', '#trending']
-      };
-    }
+    });
+    
+    // Hashtags padrão
+    hashtags.push('#viral', '#trending', '#fyp', '#tiktok');
+    
+    return hashtags.slice(0, 8);
   }
 
   // Fallback com tendências pré-definidas por categoria
-  private async getFallbackTrends(geoCode: string, category: number, contentType: string): Promise<TrendData[]> {
+  private async getFallbackTrends(geoCode: string, category: string, contentType: string): Promise<TrendData[]> {
     const fallbackTrends = {
       'trending': [
-        { keyword: 'IA e tecnologia', value: 85, base: 'inteligência artificial' },
+        { keyword: 'IA e tecnologia', value: 85, base: 'inteligencia artificial' },
         { keyword: 'Sustentabilidade', value: 78, base: 'meio ambiente' },
         { keyword: 'Crypto e NFTs', value: 72, base: 'criptomoedas' }
       ],
       'comedy': [
         { keyword: 'Memes virais', value: 90, base: 'memes' },
-        { keyword: 'Stand-up comedy', value: 75, base: 'comédia' },
+        { keyword: 'Stand-up comedy', value: 75, base: 'comedia' },
         { keyword: 'Pegadinhas', value: 68, base: 'pranks' }
       ],
       'horror': [
         { keyword: 'Filmes de terror 2024', value: 82, base: 'terror' },
-        { keyword: 'Histórias assombradas', value: 76, base: 'assombração' },
+        { keyword: 'Histórias assombradas', value: 76, base: 'assombracao' },
         { keyword: 'Creepypasta', value: 71, base: 'creepy' }
       ]
     };
@@ -243,7 +223,7 @@ export class TrendsService {
     
     const contentHashtags = {
       'trending': ['#trend', '#viral', '#popular', '#momento'],
-      'comedy': ['#funny', '#humor', '#risos', '#comédia'],
+      'comedy': ['#funny', '#humor', '#risos', '#comedia'],
       'horror': ['#terror', '#scary', '#medo', '#assustador']
     };
     
