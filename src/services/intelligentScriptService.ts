@@ -231,30 +231,30 @@ export class IntelligentScriptService {
   }
 
   private generateSceneDescription(blockNumber: number, narrative: any, trend: any, paceElement: string): string {
-    const sceneTemplates = {
+    const continuousSceneTemplates = {
       'hook-setup': [
-        `${narrative.hookStrategy}. The scene starts unexpectedly to capture immediate attention.`,
-        `Impactful opening: character in unusual situation related to "${trend.keyword}".`,
-        `Strong visual hook: something breaks the normal pattern and grabs the viewer in the first 2 seconds.`
+        `Opening scene: Character begins discussing ${trend.keyword} with genuine curiosity and excitement. Natural conversation starter that hooks viewers immediately.`,
+        `Introduction moment: Character starts sharing their experience with ${trend.keyword} in an authentic, relatable way that draws audience attention.`,
+        `Engaging opener: Character begins revealing something surprising about ${trend.keyword} with natural enthusiasm and energy.`
       ],
       'conflict': [
-        `The conflict intensifies. Character faces challenge related to the trend "${trend.keyword}".`,
-        `Tension moment: things don't go as expected with "${trend.keyword}".`,
-        `Narrative complication that keeps the audience engaged and curious.`
+        `Continuation: Character develops their story about ${trend.keyword}, building anticipation and maintaining viewer engagement through authentic reaction.`,
+        `Story development: Character shares more details about their ${trend.keyword} experience, keeping the narrative flowing naturally and emotionally.`,
+        `Building tension: Character continues their revelation about ${trend.keyword}, escalating excitement and maintaining authentic conversation flow.`
       ],
       'development': [
-        `Story development. Character explores "${trend.keyword}" more deeply.`,
-        `Important revelations about the trend and how it impacts the character.`,
-        `Emotional building that connects the audience with the character's journey.`
+        `Story progression: Character deepens their explanation about ${trend.keyword}, maintaining natural conversation rhythm and viewer connection.`,
+        `Narrative expansion: Character provides more context about ${trend.keyword}, keeping dialogue authentic and emotionally engaging.`,
+        `Content development: Character elaborates on their ${trend.keyword} discovery, sustaining natural conversation flow and audience interest.`
       ],
       'resolution-cta': [
-        `Satisfying resolution. Character masters "${trend.keyword}" and invites participation.`,
-        `Impactful conclusion with clear call-to-action for the audience.`,
-        `Ending that encourages engagement and content sharing.`
+        `Conclusion and invitation: Character wraps up their ${trend.keyword} story and naturally invites audience participation with authentic enthusiasm.`,
+        `Final revelation and call-to-action: Character completes their ${trend.keyword} narrative and encourages viewer engagement in natural way.`,
+        `Story conclusion with engagement: Character finishes sharing about ${trend.keyword} and motivates audience action through genuine excitement.`
       ]
     };
     
-    const templates = sceneTemplates[paceElement as keyof typeof sceneTemplates] || sceneTemplates['hook-setup'];
+    const templates = continuousSceneTemplates[paceElement as keyof typeof continuousSceneTemplates] || continuousSceneTemplates['hook-setup'];
     return templates[Math.floor(Math.random() * templates.length)];
   }
 
@@ -280,30 +280,30 @@ export class IntelligentScriptService {
   }
 
   private generateCameraWork(blockNumber: number, totalBlocks: number, paceElement: string): string {
-    const cameraStyles = {
+    const conversationalCameraStyles = {
       'hook-setup': [
-        'Dramatic close-up on face, 35mm, quick push-in movement to create immediate impact',
-        'Medium shot with sudden zoom, handheld for energy, focus on character\'s initial reaction',
-        'Dutch angle to create tension, dynamic camera movement to break expectations'
+        'Medium close-up, 35mm, character looks directly at camera with natural eye contact and engaging expression',
+        'Frontal medium shot, 50mm, character positioned naturally as if speaking directly to viewer with authentic energy',
+        'Comfortable close-up, 35mm, character maintains natural posture while delivering opening dialogue with genuine enthusiasm'
       ],
       'conflict': [
-        'American shot with lateral tracking movement, 50mm, following character\'s action',
-        'Handheld camera with quick cuts, multiple angles to intensify conflict',
-        'Sequence shot with zoom-out revealing complete situation context'
+        'Slight angle change to medium shot, 35mm, character turns naturally toward new camera position continuing conversation flow',
+        'Side angle medium close-up, 50mm, character repositions naturally as if switching conversation direction while maintaining engagement',
+        'Three-quarter view, 35mm, character adjusts to new camera angle seamlessly, continuing dialogue with natural body language'
       ],
       'development': [
-        'Stable medium shot, 35mm, smooth dolly movement to accompany development',
-        'Alternates close-ups and wide shots, calmer rhythm for information absorption',
-        'Fixed camera with rack focus to highlight important trend elements'
+        'Return to frontal position, 35mm, character faces camera directly again as conversation develops naturally and authentically',
+        'Medium shot from slightly higher angle, 50mm, character looks up naturally while continuing story progression with confidence',
+        'Closer medium shot, 35mm, character leans in slightly toward camera creating intimacy while maintaining conversational flow'
       ],
       'resolution-cta': [
-        'Wide shot to show final result, crane-up movement for visual impact',
-        'Final close-up on character, 85mm, stabilized to create audience connection',
-        'Medium shot with circular movement, highlighting call-to-action and engagement'
+        'Final frontal close-up, 35mm, character makes direct eye contact for call-to-action with natural confidence and enthusiasm',
+        'Engaging medium close-up, 50mm, character positioned for optimal viewer connection during final message and invitation',
+        'Direct address position, 35mm, character faces camera straight-on for authentic final appeal and audience engagement'
       ]
     };
     
-    const styles = cameraStyles[paceElement as keyof typeof cameraStyles] || cameraStyles['hook-setup'];
+    const styles = conversationalCameraStyles[paceElement as keyof typeof conversationalCameraStyles] || conversationalCameraStyles['hook-setup'];
     return styles[Math.floor(Math.random() * styles.length)];
   }
 
@@ -326,19 +326,20 @@ export class IntelligentScriptService {
     const audioLanguage = character.personality.match(/Audio Language:\s*([a-z-A-Z]+)/)?.[1] || 'pt-BR';
     const languageName = this.getLanguageName(audioLanguage);
     
-    // Falas mais curtas e diretas para caber em 8 segundos
+    // NOVA ESTRUTURA: Diálogo contínuo e fluido entre blocos
+    // Como se fosse uma conversa única com cortes de câmera
     const audioTemplates = {
       'pt-BR': {
-        1: `"${character.name}: Gente! ${trend.keyword} está viral!" Voz em ${languageName} com energia alta. Som: música trending.`,
-        2: `"${character.name}: Olha isso! Mudou tudo!" Voz em ${languageName} com suspense. Efeitos sonoros.`,
-        3: `"${character.name}: A verdade sobre ${trend.keyword}!" Voz em ${languageName} confiante. Música intensificando.`,
-        4: `"${character.name}: Tenta aí! Marca os amigos!" Voz em ${languageName} com call-to-action. Som final viral.`
+        1: `"${character.name}: Gente, vocês viram que ${trend.keyword} está bombando? Eu testei e..." Voz em ${languageName} com energia crescente e curiosidade. Som de fundo: música trending suave.`,
+        2: `"${character.name}: ...não acreditei no resultado! Olha só isso aqui, mudou completamente..." Voz em ${languageName} com empolgação e surpresa genuína. Música intensificando gradualmente.`,
+        3: `"${character.name}: ...a forma como eu vejo ${trend.keyword}! Vocês precisam testar isso!" Voz em ${languageName} confiante e convida ação. Música no pico com call-to-action.`,
+        4: `"${character.name}: Marca seus amigos que precisam ver isso! Link na bio!" Voz em ${languageName} energética com urgência. Som final de impacto.`
       },
       'en-US': {
-        1: `"${character.name}: Guys! ${trend.keyword} is trending!" Voice in ${languageName} with high energy. Sound: trending music.`,
-        2: `"${character.name}: Look at this! Everything changed!" Voice in ${languageName} with suspense. Sound effects.`,
-        3: `"${character.name}: The truth about ${trend.keyword}!" Voice in ${languageName} confident. Music intensifying.`,
-        4: `"${character.name}: Try it! Tag your friends!" Voice in ${languageName} with call-to-action. Viral ending sound.`
+        1: `"${character.name}: Guys, have you seen that ${trend.keyword} is trending? I tried it and..." Voice in ${languageName} with growing energy and curiosity. Background: soft trending music.`,
+        2: `"${character.name}: ...I couldn't believe the results! Look at this, it completely changed..." Voice in ${languageName} with excitement and genuine surprise. Music gradually intensifying.`,
+        3: `"${character.name}: ...the way I see ${trend.keyword}! You guys need to try this!" Voice in ${languageName} confident and inviting action. Music at peak with call-to-action.`,
+        4: `"${character.name}: Tag your friends who need to see this! Link in bio!" Voice in ${languageName} energetic with urgency. Final impact sound.`
       }
     };
     
@@ -347,15 +348,17 @@ export class IntelligentScriptService {
   }
 
   private generateTransition(blockNumber: number, totalBlocks: number): string {
-    const transitions = [
-      'Quick cut with zoom effect, synchronized with music beat',
-      'Swipe transition with trend hashtag overlay',
-      'Freeze frame with text overlay, followed by dynamic jump cut',
-      'Modern glitch effect with trending visual elements',
-      'Dramatic speed ramp with camera angle change'
+    // NOVA ABORDAGEM: Apenas cortes de câmera simples
+    // Sem efeitos visuais que consomem tempo de fala
+    const cameraTransitions = [
+      'Cut to different camera angle - character continues speaking naturally',
+      'Quick camera angle change - seamless dialogue continuation',
+      'Camera repositioning - character maintains eye contact with new angle',
+      'Simple cut - character looks toward new camera position',
+      'Angle switch - natural conversation flow continues'
     ];
     
-    return transitions[Math.floor(Math.random() * transitions.length)];
+    return cameraTransitions[Math.floor(Math.random() * cameraTransitions.length)];
   }
 
   private generateViralTitle(characterName: string, trendKeyword: string, contentType: string): string {
